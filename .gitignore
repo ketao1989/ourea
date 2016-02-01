@@ -7,6 +7,16 @@
 *.jar
 *.war
 *.ear
-
+*.idea
+.idea
+.idea*
+*.iml
+java.api.utils.project.iml
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+.target
+target/*
+.catalina*
+.DS_Store
+*.log
+
