@@ -18,12 +18,7 @@ public class ServiceInfo implements Serializable {
     private static final long serialVersionUID = -7572772909108866010L;
 
     /**
-     * 服务唯一id
-     */
-    private String id;
-
-    /**
-     * 服务接口名,全路径. id+interfaceName 唯一确定一个服务名
+     * 服务接口名,全路径.
      */
     private String interfaceName;
 
@@ -46,14 +41,6 @@ public class ServiceInfo implements Serializable {
      * 表示服务是否只是直接调用.true表示直接调用,false表示会额外注册到zk上.
      */
     private boolean directInvoke;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getInterfaceName() {
         return interfaceName;
