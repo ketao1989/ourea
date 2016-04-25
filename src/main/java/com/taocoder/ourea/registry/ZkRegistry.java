@@ -3,11 +3,14 @@
  */
 package com.taocoder.ourea.registry;
 
-import com.taocoder.ourea.common.PathUtils;
+import com.google.common.base.Joiner;
 import com.taocoder.ourea.common.Constants;
-
+import com.taocoder.ourea.model.ProviderInfo;
+import com.taocoder.ourea.model.ServiceInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.BoundedExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 
 /**
@@ -17,30 +20,43 @@ import org.apache.zookeeper.CreateMode;
  */
 public class ZkRegistry implements IRegistry {
 
+    /**
+     * 包含ip,port,weight
+     */
+    private static final String END_PATH_TEMPLATE = "ip=%s&port=%s&weight=%s";
+
     private CuratorFramework zkClient;
 
-    public ZkRegistry(CuratorFramework zkClient) {
-        this.zkClient = zkClient;
+    public ZkRegistry(String zkAddress,int zkTimeout) {
+
+        zkClient = CuratorFrameworkFactory.builder().connectString(zkAddress).sessionTimeoutMs(zkTimeout)
+                .retryPolicy(new BoundedExponentialBackoffRetry(10, 1000, 3)).build();
+
+        zkClient.start();
     }
 
     @Override
-    public void register(String info) {
+    public void register(ServiceInfo info, ProviderInfo providerInfo, String role) {
 
-        if (StringUtils.isBlank(info)) {
+        if (info == null) {
             throw new IllegalArgumentException("register info param invalid.");
         }
 
-        String parentPath = PathUtils.buildPath(info);
+        if (info.getInterfaceClazz() == null || StringUtils.isEmpty(role)) {
+            throw new IllegalArgumentException("register info.clazz or role param invalid.");
+        }
 
-        zkClient.start();
+        String parentPath = Joiner.on(Constants.PATH_SEPARATOR).join(Constants.ZK_PATH_PREFIX,
+                info.getInterfaceClazz().getCanonicalName(), info.getGroup(), info.getVersion(), role);
+
+        String endPath = String.format(END_PATH_TEMPLATE, providerInfo.getIp(), providerInfo.getPort(),
+                providerInfo.getWeight());
+
+        String path = parentPath + Constants.PATH_SEPARATOR + endPath;
 
         try {
 
-            zkClient.create().creatingParentsIfNeeded().forPath(parentPath);
-
-            String path = parentPath + Constants.PATH_SEPARATOR + info;
-
-            zkClient.create().withMode(CreateMode.EPHEMERAL).forPath(path);
+            zkClient.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(path);
 
         } catch (Exception e) {
             // handle exception
@@ -50,28 +66,19 @@ public class ZkRegistry implements IRegistry {
     }
 
     @Override
-    public void unRegister(String info) {
+    public void unregister(ServiceInfo info, ProviderInfo providerInfo, String role) {
 
-        zkClient.start();
+        String parentPath = Joiner.on(Constants.PATH_SEPARATOR).join(Constants.ZK_PATH_PREFIX,
+                info.getInterfaceClazz().getCanonicalName(), info.getGroup(), info.getVersion(), role);
+        String endPath = String.format(END_PATH_TEMPLATE, providerInfo.getIp(), providerInfo.getPort(),
+                providerInfo.getWeight());
+        String path = parentPath + Constants.PATH_SEPARATOR + endPath;
 
-        String path = PathUtils.buildPath(info) + Constants.PATH_SEPARATOR + info;
         try {
             zkClient.delete().forPath(path);
         } catch (Exception e) {
-
-            // handle exception
+            e.printStackTrace();
         }
-
-    }
-
-    @Override
-    public void subscribe(String info) {
-
-    }
-
-    @Override
-    public void unSubscribe(String info) {
-
     }
 
 }

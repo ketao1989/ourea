@@ -1,6 +1,6 @@
 /*
-* Copyright (c) 2015 ketao1989.github.com. All Rights Reserved.
-*/
+ * Copyright (c) 2015 ketao1989.github.com. All Rights Reserved.
+ */
 package com.taocoder.ourea.model;
 
 import org.apache.commons.pool2.ObjectPool;
@@ -9,6 +9,8 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import java.io.Serializable;
 
 /**
+ * 对于一个provider server的连接池对象.
+ * 
  * @author tao.ke Date: 16/3/3 Time: 下午2:35
  */
 public class InvokeConn implements Serializable {

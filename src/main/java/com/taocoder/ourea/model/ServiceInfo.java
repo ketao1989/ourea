@@ -33,11 +33,6 @@ public class ServiceInfo implements Serializable {
     private String group;
 
     /**
-     * 服务状态,0表示不可用,1表示正常
-     */
-    private int status;
-
-    /**
      * 表示服务是否只是直接调用.true表示直接调用,false表示会额外注册到zk上.
      */
     private boolean directInvoke;
@@ -64,14 +59,6 @@ public class ServiceInfo implements Serializable {
 
     public void setGroup(String group) {
         this.group = group;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
     }
 
     public boolean isDirectInvoke() {

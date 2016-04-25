@@ -3,12 +3,14 @@
  */
 package com.taocoder.ourea.model;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.io.Serializable;
 
 /**
+ * 调用方法相关属性,主要用来做负载均衡时,针对方法级别的RR
+ *
  * @author tao.ke Date: 16/3/3 Time: 下午3:40
  */
 public class Invocation implements Serializable {
@@ -18,8 +20,6 @@ public class Invocation implements Serializable {
     private String interfaceName;
 
     private String methodName;
-
-    private Class<?>[] parameterTypes;
 
     public String getInterfaceName() {
         return interfaceName;
@@ -37,14 +37,6 @@ public class Invocation implements Serializable {
         this.methodName = methodName;
     }
 
-    public Class<?>[] getParameterTypes() {
-        return parameterTypes;
-    }
-
-    public void setParameterTypes(Class<?>[] parameterTypes) {
-        this.parameterTypes = parameterTypes;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -55,24 +47,12 @@ public class Invocation implements Serializable {
 
         Invocation that = (Invocation) o;
 
-        if (!StringUtils.equals(methodName, that.getMethodName())) {
-            return false;
-        }
-
-        int size = parameterTypes.length;
-
-        for (int i = 0; i < size; i++) {
-            if (!StringUtils.equals(parameterTypes[i].getCanonicalName(),
-                    that.getParameterTypes()[i].getCanonicalName())) {
-                return false;
-            }
-        }
-        return true;
+        return new EqualsBuilder().append(interfaceName, that.interfaceName).append(methodName, that.methodName)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(17, 37).append(methodName).append(parameterTypes).toHashCode();
+        return new HashCodeBuilder(17, 37).append(interfaceName).append(methodName).toHashCode();
     }
-
 }
