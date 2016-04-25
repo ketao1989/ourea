@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2015 ketao1989.github.com. All Rights Reserved.
  */
-package io.github.ketao1989.ourea.common;
+package com.taocoder.ourea.common;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
@@ -17,6 +17,8 @@ public class PathUtils {
     public static String buildPath(String pathInfo) {
 
         Map<String, String> registerInfo = Splitter.on('&').withKeyValueSeparator('=').split(pathInfo);
+
+        System.out.println(registerInfo);
 
         // create node
         String parentPath = Joiner.on(Constants.PATH_SEPARATOR)

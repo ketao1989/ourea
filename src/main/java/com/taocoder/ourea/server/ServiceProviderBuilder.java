@@ -1,11 +1,12 @@
 /*
  * Copyright (c) 2015 ketao1989.github.com. All Rights Reserved.
  */
-package io.github.ketao1989.ourea.server;
-
-import org.apache.commons.lang3.StringUtils;
+package com.taocoder.ourea.server;
 
 import com.facebook.fb303.FacebookService;
+import com.taocoder.ourea.common.ClassUtils;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.server.TServerEventHandler;
 
 /**
@@ -24,9 +25,9 @@ public class ServiceProviderBuilder {
         this.serviceProvider = serviceProvider;
     }
 
-    public static ServiceProviderBuilder newBuilder(Class clazz, Object ref, int port) {
+    public static ServiceProviderBuilder newBuilder(Class clazz, Object ref, int port,String zkAddr) {
 
-        if (!FacebookService.class.isAssignableFrom(clazz)) {
+        if (!FacebookService.Iface.class.isAssignableFrom(ClassUtils.getIface(clazz))) {
             throw new IllegalArgumentException("illegal interface not implement com.facebook.fb303.FacebookService");
         }
 
@@ -35,13 +36,9 @@ public class ServiceProviderBuilder {
         serviceProvider.setInterfaceClazz(clazz);
         serviceProvider.setRefImpl(ref);
         serviceProvider.setPort(port);
+        serviceProvider.setZkAddress(zkAddr);
 
         return new ServiceProviderBuilder(serviceProvider);
-    }
-
-    public ServiceProviderBuilder setZkAddress(String zkAddr) {
-        serviceProvider.setZkAddress(zkAddr);
-        return this;
     }
 
     public ServiceProviderBuilder setServiceId(String id) {

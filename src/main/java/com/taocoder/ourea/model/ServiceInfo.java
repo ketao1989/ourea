@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2015 ketao1989.github.com. All Rights Reserved.
  */
-package io.github.ketao1989.ourea.model;
+package com.taocoder.ourea.model;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -20,7 +20,7 @@ public class ServiceInfo implements Serializable {
     /**
      * 服务接口名,全路径.
      */
-    private String interfaceName;
+    private Class interfaceClazz;
 
     /**
      * 服务版本号
@@ -42,12 +42,12 @@ public class ServiceInfo implements Serializable {
      */
     private boolean directInvoke;
 
-    public String getInterfaceName() {
-        return interfaceName;
+    public Class getInterfaceClazz() {
+        return interfaceClazz;
     }
 
-    public void setInterfaceName(String interfaceName) {
-        this.interfaceName = interfaceName;
+    public void setInterfaceClazz(Class interfaceClazz) {
+        this.interfaceClazz = interfaceClazz;
     }
 
     public String getVersion() {

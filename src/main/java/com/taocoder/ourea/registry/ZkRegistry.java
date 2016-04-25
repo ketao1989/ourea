@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2015 ketao1989.github.com. All Rights Reserved.
  */
-package io.github.ketao1989.ourea.registry;
+package com.taocoder.ourea.registry;
+
+import com.taocoder.ourea.common.PathUtils;
+import com.taocoder.ourea.common.Constants;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.CreateMode;
-
-import io.github.ketao1989.ourea.common.Constants;
-import io.github.ketao1989.ourea.common.PathUtils;
 
 /**
  * 注册信息格式 xx=yy&mm=nn
@@ -44,6 +44,7 @@ public class ZkRegistry implements IRegistry {
 
         } catch (Exception e) {
             // handle exception
+            e.printStackTrace();
         }
 
     }

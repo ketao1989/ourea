@@ -1,13 +1,16 @@
 /*
  * Copyright (c) 2015 ketao1989.github.com. All Rights Reserved.
  */
-package io.github.ketao1989.ourea.server;
+package com.taocoder.ourea.server;
 
-import com.facebook.fb303.FacebookService;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
-import io.github.ketao1989.ourea.common.ClassUtils;
-import io.github.ketao1989.ourea.registry.ZkRegistry;
+
+import com.facebook.fb303.FacebookService;
+import com.taocoder.ourea.common.ClassUtils;
+import com.taocoder.ourea.common.Constants;
+import com.taocoder.ourea.registry.ZkRegistry;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -19,6 +22,10 @@ import org.apache.thrift.server.TServerEventHandler;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 
+import java.net.Inet4Address;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
 import java.util.Map;
 
 /**
@@ -72,8 +79,6 @@ public class ServiceProvider {
     private String group;
 
     private TServerEventHandler serverEventHandler;
-
-    private TProcessor tProcessor;
 
     private CuratorFramework zkClient;
 
@@ -159,14 +164,6 @@ public class ServiceProvider {
         this.serverEventHandler = serverEventHandler;
     }
 
-    public TProcessor gettProcessor() {
-        return tProcessor;
-    }
-
-    public void settProcessor(TProcessor tProcessor) {
-        this.tProcessor = tProcessor;
-    }
-
     // 启动server
     public void start() {
 
@@ -180,7 +177,8 @@ public class ServiceProvider {
             args.minWorkerThreads = getMinWorkerThreads();
             args.protocolFactory(new TBinaryProtocol.Factory());
 
-            TProcessor tProcessor = ClassUtils.getProcessorConstructorIface(interfaceClazz).newInstance(refImpl);
+            TProcessor tProcessor = ClassUtils
+                .getProcessorConstructorIface(interfaceClazz).newInstance(refImpl);
             args.processor(tProcessor);
             final TServer server = new TThreadPoolServer(args);
             server.setServerEventHandler(serverEventHandler);
@@ -190,7 +188,7 @@ public class ServiceProvider {
                     server.serve();
                 }
             });
-            thread.setDaemon(true);
+            thread.setDaemon(false);
             thread.start();
 
         } catch (Exception e) {
@@ -212,27 +210,49 @@ public class ServiceProvider {
 
     private void init() throws Exception {
 
-        zkClient = CuratorFrameworkFactory.builder().connectString(zkAddress)
-                .sessionTimeoutMs(zkTimeout).retryPolicy(new BoundedExponentialBackoffRetry(10, 1000, 3)).build();
-        ZkRegistry zkRegistry = new ZkRegistry(zkClient);
+    zkClient = CuratorFrameworkFactory.builder().connectString(zkAddress).sessionTimeoutMs(zkTimeout)
+        .retryPolicy(new BoundedExponentialBackoffRetry(10, 1000, 3)).build();
+    ZkRegistry zkRegistry = new ZkRegistry(zkClient);
 
-        Map<String,String> map = Maps.newHashMap();
-        map.put("interface",interfaceClazz.getCanonicalName());
-        map.put("port",String.valueOf(port));
-        map.put("server",getLocalIp());
-        map.put("group",group);
+    Map<String, String> map = Maps.newHashMap();
+    map.put(Constants.INTERFACE_KEY, interfaceClazz.getCanonicalName());
+    map.put("port", String.valueOf(port));
+    map.put("server", getLocalIp());
+    map.put(Constants.GROUP_KEY, group);
 
-        FacebookService.Iface facebookService = (FacebookService.Iface) refImpl;
+    FacebookService.Iface facebookService = (FacebookService.Iface) refImpl;
 
-        map.put("version",facebookService.getVersion());
-        map.put("status",String.valueOf(facebookService.getStatus().getValue()));
-        info = Joiner.on('&').withKeyValueSeparator("=").join(map);
+    map.put(Constants.VERSION_KEY, facebookService.getVersion());
+    map.put("status", String.valueOf(facebookService.getStatus().getValue()));
+    map.put(Constants.INVOKER_KEY, "provider");
+    info = Joiner.on('&').withKeyValueSeparator("=").join(map);
 
         zkRegistry.register(info);
     }
 
     private String getLocalIp() {
-        return null;
+
+        try {
+            for (Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces(); e.hasMoreElements();) {
+
+                NetworkInterface item = e.nextElement();
+
+                for (InterfaceAddress address : item.getInterfaceAddresses()) {
+                    if (address.getAddress() instanceof Inet4Address) {
+                        Inet4Address inet4Address = (Inet4Address) address.getAddress();
+                        if (inet4Address.isLoopbackAddress()) {
+                            continue;
+                        }
+                        System.out.println(inet4Address.getHostAddress());
+                        return inet4Address.getHostAddress();
+                    }
+                }
+
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("no ip");
+        }
+        throw new IllegalStateException("no ip");
     }
 
 }

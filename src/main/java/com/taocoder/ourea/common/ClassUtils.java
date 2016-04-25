@@ -1,7 +1,7 @@
 /*
 * Copyright (c) 2015 ketao1989.github.com. All Rights Reserved.
 */
-package io.github.ketao1989.ourea.common;
+package com.taocoder.ourea.common;
 
 import org.apache.thrift.TProcessor;
 

@@ -1,7 +1,7 @@
 /*
 * Copyright (c) 2015 ketao1989.github.com. All Rights Reserved.
 */
-package io.github.ketao1989.ourea.model;
+package com.taocoder.ourea.model;
 
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;

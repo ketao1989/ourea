@@ -1,8 +1,10 @@
 /*
 * Copyright (c) 2015 ketao1989.github.com. All Rights Reserved.
 */
-package io.github.ketao1989.ourea.model;
+package com.taocoder.ourea.model;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -41,6 +43,32 @@ public class ProviderInfo implements Serializable{
 
     public void setWeight(int weight) {
         this.weight = weight;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        ProviderInfo that = (ProviderInfo) o;
+
+        return new EqualsBuilder()
+            .append(port, that.port)
+            .append(ip, that.ip)
+            .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+            .append(ip)
+            .append(port)
+            .toHashCode();
     }
 
     @Override public String toString() {

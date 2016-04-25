@@ -1,10 +1,11 @@
 /*
  * Copyright (c) 2015 ketao1989.github.com. All Rights Reserved.
  */
-package io.github.ketao1989.ourea.loadbalance;
+package com.taocoder.ourea.loadbalance;
 
-import io.github.ketao1989.ourea.model.Invocation;
-import io.github.ketao1989.ourea.model.InvokeConn;
+import com.taocoder.ourea.model.InvokeConn;
+import com.taocoder.ourea.model.Invocation;
+
 import org.apache.commons.lang3.RandomUtils;
 
 import java.net.URL;
@@ -16,7 +17,7 @@ import java.util.List;
 public class RandomLoadBalanceStrategy extends AbstractLoadBalanceStrategy {
 
     @Override
-    protected InvokeConn doSelect(List<InvokeConn> invokeConns, URL url,Invocation invocation) {
+    protected InvokeConn doSelect(List<InvokeConn> invokeConns, URL url, Invocation invocation) {
 
         boolean sameWeight = true;
         int totalWeight = 0;
