@@ -183,11 +183,16 @@ public class ZkServiceProvider {
 
         String parentClazzName = StringUtils.substringBeforeLast(iface.getCanonicalName(), ".Iface");
         String processorClazzName = parentClazzName + "$Processor";
-        System.out.println(processorClazzName);
 
         try {
-            Class<TProcessor> processorClazz = (Class<TProcessor>) Class.forName(processorClazzName);
-            return processorClazz.getConstructor(iface).newInstance(refImpl);
+
+            Class clazz = Class.forName(processorClazzName);
+            if (clazz.isMemberClass() && !clazz.isInterface()) {
+                @SuppressWarnings("unchecked")
+                Class<TProcessor> processorClazz = (Class<TProcessor>) clazz;
+                return processorClazz.getConstructor(iface).newInstance(refImpl);
+            }
+            return null;
         } catch (Exception e) {
             e.printStackTrace();
             throw new IllegalArgumentException("invalid refImpl params");
