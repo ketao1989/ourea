@@ -4,9 +4,11 @@
 package com.taocoder.ourea.registry;
 
 import com.google.common.base.Joiner;
+
 import com.taocoder.ourea.common.Constants;
 import com.taocoder.ourea.model.ProviderInfo;
 import com.taocoder.ourea.model.ServiceInfo;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -79,6 +81,10 @@ public class ZkRegistry implements IRegistry {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
+  }
+
+  @Override
+  public void subscribe(ServiceInfo info) {
+  }
 
 }

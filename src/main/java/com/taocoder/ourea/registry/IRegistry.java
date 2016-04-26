@@ -26,4 +26,12 @@ public interface IRegistry {
      */
     void unregister(ServiceInfo serviceInfo, ProviderInfo providerInfo, String role);
 
+  /**
+   * consumer订阅对应的zk路径下provider,每次都会触发callback操作回调consumer pool
+   * 
+   * @param serviceInfo
+   * @return
+   */
+  void subscribe(ServiceInfo serviceInfo);
+
 }
