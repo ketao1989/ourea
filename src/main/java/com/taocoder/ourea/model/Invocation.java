@@ -21,6 +21,14 @@ public class Invocation implements Serializable {
 
     private String methodName;
 
+    public Invocation() {
+    }
+
+    public Invocation(String interfaceName, String methodName) {
+        this.interfaceName = interfaceName;
+        this.methodName = methodName;
+    }
+
     public String getInterfaceName() {
         return interfaceName;
     }

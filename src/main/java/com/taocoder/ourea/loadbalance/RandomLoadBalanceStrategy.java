@@ -3,12 +3,11 @@
  */
 package com.taocoder.ourea.loadbalance;
 
-import com.taocoder.ourea.model.InvokeConn;
 import com.taocoder.ourea.model.Invocation;
+import com.taocoder.ourea.model.InvokeConn;
 
 import org.apache.commons.lang3.RandomUtils;
 
-import java.net.URL;
 import java.util.List;
 
 /**
@@ -17,7 +16,7 @@ import java.util.List;
 public class RandomLoadBalanceStrategy extends AbstractLoadBalanceStrategy {
 
     @Override
-    protected InvokeConn doSelect(List<InvokeConn> invokeConns, URL url, Invocation invocation) {
+    protected InvokeConn doSelect(List<InvokeConn> invokeConns, Invocation invocation) {
 
         boolean sameWeight = true;
         int totalWeight = 0;

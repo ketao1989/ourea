@@ -14,7 +14,7 @@ public class ZkThriftServerSample {
 
     System.out.println(Ourea.Processor.class.getCanonicalName());
 
-    ZkServiceProvider provider = new ZkServiceProvider<Ourea.Iface>(new OureaImpl(),false,false);
+    ZkServiceProvider provider = new ZkServiceProvider(new OureaImpl(),false,false);
     provider.start();
   }
 

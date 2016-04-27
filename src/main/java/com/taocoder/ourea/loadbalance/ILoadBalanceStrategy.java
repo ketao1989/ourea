@@ -6,7 +6,6 @@ package com.taocoder.ourea.loadbalance;
 import com.taocoder.ourea.model.Invocation;
 import com.taocoder.ourea.model.InvokeConn;
 
-import java.net.URL;
 import java.util.List;
 
 /**
@@ -15,11 +14,10 @@ import java.util.List;
 public interface ILoadBalanceStrategy {
 
     /**
-     * 从众多连接池子中选择其中一个池子. URL中包含consumer 的config的信息
+     * 从众多连接池子中选择其中一个池子.
      * 
      * @param invokeConns
-     * @param url
      * @return
      */
-    public InvokeConn select(List<InvokeConn> invokeConns, URL url,Invocation invocation);
+    public InvokeConn select(List<InvokeConn> invokeConns, Invocation invocation);
 }

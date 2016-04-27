@@ -28,7 +28,7 @@ public class InvokeConn implements Serializable {
     private GenericObjectPoolConfig poolConfig;
 
   public InvokeConn(ProviderInfo providerInfo) {
-    new InvokeConn(providerInfo, new GenericObjectPoolConfig());
+    this(providerInfo, new GenericObjectPoolConfig());
   }
 
   public InvokeConn(ProviderInfo providerInfo, GenericObjectPoolConfig poolConfig) {

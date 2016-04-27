@@ -6,7 +6,6 @@ package com.taocoder.ourea.loadbalance;
 import com.taocoder.ourea.model.Invocation;
 import com.taocoder.ourea.model.InvokeConn;
 
-import java.net.URL;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,7 +20,7 @@ public class RoundRobinLoadBalanceStrategy extends AbstractLoadBalanceStrategy {
     private static final ConcurrentHashMap<String, AtomicInteger> current = new ConcurrentHashMap<String, AtomicInteger>();
 
     @Override
-    protected InvokeConn doSelect(List<InvokeConn> invokeConns, URL url, Invocation invocation) {
+    protected InvokeConn doSelect(List<InvokeConn> invokeConns, Invocation invocation) {
 
         String key = invocation.getInterfaceName() + invocation.getMethodName();
 

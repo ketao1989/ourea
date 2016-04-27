@@ -12,6 +12,7 @@ public class OureaImpl implements Ourea.Iface {
 
     @Override
     public String queryEcho(String request) throws TException {
+    System.out.println("--------" + request);
         return request;
     }
 }
