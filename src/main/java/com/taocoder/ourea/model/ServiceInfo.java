@@ -13,14 +13,14 @@ import java.io.Serializable;
  * 
  * @author tao.ke Date: 16/3/3 Time: 下午2:26
  */
-public class ServiceInfo implements Serializable {
+public class ServiceInfo<T> implements Serializable {
 
     private static final long serialVersionUID = -7572772909108866010L;
 
     /**
      * 服务接口名,全路径.
      */
-    private Class interfaceClazz;
+    private Class<T> interfaceClazz;
 
     /**
      * 服务版本号
@@ -37,11 +37,11 @@ public class ServiceInfo implements Serializable {
      */
     private boolean directInvoke;
 
-    public Class getInterfaceClazz() {
+    public Class<T> getInterfaceClazz() {
         return interfaceClazz;
     }
 
-    public void setInterfaceClazz(Class interfaceClazz) {
+    public void setInterfaceClazz(Class<T> interfaceClazz) {
         this.interfaceClazz = interfaceClazz;
     }
 

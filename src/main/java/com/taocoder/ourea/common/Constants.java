@@ -10,8 +10,6 @@ public class Constants {
 
     public static final String ZK_PATH_PREFIX = "/ourea";
 
-    public static final String DEFAULT_GROUP_NAME = "ourea";
-
     public static final String PATH_SEPARATOR = "/";
 
     public static final String GROUP_KEY = "group";
@@ -21,4 +19,13 @@ public class Constants {
     public static final String INTERFACE_KEY = "interface";
 
     public static final String INVOKER_KEY = "invoker";
+
+    public static final String DEFAULT_INVOKER_PROVIDER = "provider";
+
+    public static final String DEFAULT_INVOKER_CONSUMER = "consumer";
+
+    public static final String DEFAULT_GROUP_NAME = "ourea";
+
+    public static final String DEFAULT_VERSION_VALUE = "1.0.0";
+
 }

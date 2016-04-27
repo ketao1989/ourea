@@ -23,6 +23,13 @@ public class ProviderInfo implements Serializable {
     private int port;
     private int weight;
 
+    public ProviderInfo() {
+    }
+
+    public ProviderInfo(String ip) {
+        this.ip = ip;
+    }
+
     public String getIp() {
         return ip;
     }

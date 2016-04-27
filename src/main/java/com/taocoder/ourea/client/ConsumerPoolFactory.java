@@ -14,7 +14,7 @@ import org.apache.thrift.transport.TTransport;
 /**
  * @author tao.ke Date: 16/4/25 Time: 下午4:46
  */
-public class ClientPoolFactory implements PooledObjectFactory<TTransport> {
+public class ConsumerPoolFactory implements PooledObjectFactory<TTransport> {
 
   /**
    * 服务提供者的信息
@@ -26,11 +26,11 @@ public class ClientPoolFactory implements PooledObjectFactory<TTransport> {
    */
   private int timeout = 1000;
 
-  public ClientPoolFactory(ProviderInfo providerInfo) {
+  public ConsumerPoolFactory(ProviderInfo providerInfo) {
     this.providerInfo = providerInfo;
   }
 
-  public ClientPoolFactory(ProviderInfo providerInfo, int timeout) {
+  public ConsumerPoolFactory(ProviderInfo providerInfo, int timeout) {
     this.providerInfo = providerInfo;
     this.timeout = timeout;
   }

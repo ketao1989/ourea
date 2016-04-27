@@ -6,14 +6,19 @@ package com.taocoder.ourea.registry;
 import com.google.common.base.Joiner;
 
 import com.taocoder.ourea.common.Constants;
+import com.taocoder.ourea.common.ProviderInfoUtils;
 import com.taocoder.ourea.model.ProviderInfo;
 import com.taocoder.ourea.model.ServiceInfo;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.curator.retry.BoundedExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.WatchedEvent;
+
+import java.util.List;
 
 /**
  * 注册信息格式 xx=yy&mm=nn
@@ -84,7 +89,25 @@ public class ZkRegistry implements IRegistry {
   }
 
   @Override
-  public void subscribe(ServiceInfo info) {
+  public void subscribe(ServiceInfo info, final INotifyListener listener) {
+
+    final String parentPath = Joiner.on(Constants.PATH_SEPARATOR).join(Constants.ZK_PATH_PREFIX,
+        info.getInterfaceClazz().getCanonicalName(), info.getGroup(), info.getVersion(),
+        Constants.DEFAULT_INVOKER_PROVIDER);
+    try {
+
+      List<String> nodes = zkClient.getChildren().usingWatcher(new CuratorWatcher() {
+        @Override
+        public void process(WatchedEvent event) throws Exception {
+          List<String> childrenNodes = zkClient.getChildren().usingWatcher(this).forPath(parentPath);
+          listener.notify(ProviderInfoUtils.convertZkChildren(childrenNodes));
+        }
+      }).forPath(parentPath);
+
+      listener.notify(ProviderInfoUtils.convertZkChildren(nodes));
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
 }

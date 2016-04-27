@@ -3,7 +3,7 @@
 */
 package com.taocoder.ourea;
 
-import com.taocoder.ourea.server.ZkServiceProvider;
+import com.taocoder.ourea.provider.ZkServiceProvider;
 
 /**
  * @author tao.ke Date: 16/4/25 Time: 下午2:27
@@ -14,7 +14,7 @@ public class ZkThriftServerSample {
 
     System.out.println(Ourea.Processor.class.getCanonicalName());
 
-    ZkServiceProvider provider = new ZkServiceProvider(new OureaImpl(),false,false);
+    ZkServiceProvider provider = new ZkServiceProvider<Ourea.Iface>(new OureaImpl(),false,false);
     provider.start();
   }
 

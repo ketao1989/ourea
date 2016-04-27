@@ -32,6 +32,6 @@ public interface IRegistry {
    * @param serviceInfo
    * @return
    */
-  void subscribe(ServiceInfo serviceInfo);
+  void subscribe(ServiceInfo serviceInfo,INotifyListener listener);
 
 }

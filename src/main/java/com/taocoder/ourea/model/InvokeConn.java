@@ -3,13 +3,17 @@
  */
 package com.taocoder.ourea.model;
 
+import com.taocoder.ourea.client.ConsumerPoolFactory;
+
 import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.apache.thrift.transport.TTransport;
 
 import java.io.Serializable;
 
 /**
- * 对于一个provider server的连接池对象.
+ * 对于一个provider server的连接池对象.这个对象很重,所以需要缓存之后在使用
  * 
  * @author tao.ke Date: 16/3/3 Time: 下午2:35
  */
@@ -19,9 +23,19 @@ public class InvokeConn implements Serializable {
 
     private ProviderInfo providerInfo;
 
-    private ObjectPool connPool;
+    private ObjectPool<TTransport> connPool;
 
     private GenericObjectPoolConfig poolConfig;
+
+  public InvokeConn(ProviderInfo providerInfo) {
+    new InvokeConn(providerInfo, new GenericObjectPoolConfig());
+  }
+
+  public InvokeConn(ProviderInfo providerInfo, GenericObjectPoolConfig poolConfig) {
+    this.providerInfo = providerInfo;
+    this.poolConfig = poolConfig;
+    connPool = new GenericObjectPool<TTransport>(new ConsumerPoolFactory(providerInfo),poolConfig);
+  }
 
     public ProviderInfo getProviderInfo() {
         return providerInfo;
@@ -31,12 +45,8 @@ public class InvokeConn implements Serializable {
         this.providerInfo = providerInfo;
     }
 
-    public ObjectPool getConnPool() {
+    public ObjectPool<TTransport> getConnPool() {
         return connPool;
-    }
-
-    public void setConnPool(ObjectPool connPool) {
-        this.connPool = connPool;
     }
 
     public GenericObjectPoolConfig getPoolConfig() {

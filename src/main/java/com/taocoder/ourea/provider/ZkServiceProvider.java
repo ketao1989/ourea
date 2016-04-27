@@ -1,13 +1,16 @@
 /*
  * Copyright (c) 2015 taocoder.com. All Rights Reserved.
  */
-package com.taocoder.ourea.server;
+package com.taocoder.ourea.provider;
 
+import com.taocoder.ourea.common.Constants;
+import com.taocoder.ourea.common.LocalIpUtils;
 import com.taocoder.ourea.common.PropertiesUtils;
 import com.taocoder.ourea.model.ProviderInfo;
 import com.taocoder.ourea.model.ServiceInfo;
 import com.taocoder.ourea.registry.IRegistry;
 import com.taocoder.ourea.registry.ZkRegistry;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -18,10 +21,6 @@ import org.apache.thrift.transport.TServerSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.Inet4Address;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
-import java.util.Enumeration;
 import java.util.Properties;
 
 /**
@@ -29,18 +28,16 @@ import java.util.Properties;
  *
  * @author tao.ke Date: 16/4/25 Time: 下午10:00
  */
-public class ZkServiceProvider {
+public class ZkServiceProvider<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZkServiceProvider.class);
 
-    private static final Properties properties = PropertiesUtils.load("server.properties");
-
-    private static final String SERVER_ROLE = "provider";
+    private static final Properties properties = PropertiesUtils.load("provider.properties");
 
     /**
      * 接口实例
      */
-    private Object refImpl;
+    private T refImpl;
 
     /**
      * 是否注册zk
@@ -62,7 +59,7 @@ public class ZkServiceProvider {
      */
     private IRegistry registry;
 
-    public ZkServiceProvider(Object refImpl, boolean directInvoke, boolean daemonRun) {
+    public ZkServiceProvider(T refImpl, boolean directInvoke, boolean daemonRun) {
 
         if (refImpl == null) {
             throw new IllegalArgumentException("invalid refImpl instance.");
@@ -82,14 +79,15 @@ public class ZkServiceProvider {
     public void start() {
 
         ProviderInfo providerInfo = new ProviderInfo();
-        providerInfo.setIp(getLocalIp());
+        providerInfo.setIp(LocalIpUtils.getLocalIp());
         providerInfo.setPort(Integer.parseInt(properties.getProperty("port")));
         providerInfo.setWeight(1);
 
-        ServiceInfo serviceInfo = new ServiceInfo();
+
+        ServiceInfo<T> serviceInfo = new ServiceInfo<T>();
         serviceInfo.setDirectInvoke(directInvoke);
         serviceInfo.setGroup(properties.getProperty("group"));
-        serviceInfo.setInterfaceClazz(refImpl.getClass());
+        serviceInfo.setInterfaceClazz((Class<T>) refImpl.getClass());
         serviceInfo.setVersion(properties.getProperty("version"));
 
         if (!directInvoke) {
@@ -115,7 +113,7 @@ public class ZkServiceProvider {
         // 创建一个新的register对象
         registry = new ZkRegistry(properties.getProperty("zkAddress"),
                 Integer.parseInt(properties.getProperty("zkTimeout")));
-        registry.register(serviceInfo, providerInfo, SERVER_ROLE);
+        registry.register(serviceInfo, providerInfo, Constants.DEFAULT_INVOKER_PROVIDER);
 
         System.out.println("--------------start zk register--------------------");
 
@@ -156,7 +154,7 @@ public class ZkServiceProvider {
             return;
         }
 
-        registry.unregister(serviceInfo, providerInfo, SERVER_ROLE);
+        registry.unregister(serviceInfo, providerInfo, Constants.DEFAULT_INVOKER_PROVIDER);
     }
 
     /**
@@ -200,34 +198,5 @@ public class ZkServiceProvider {
 
     }
 
-    /**
-     * 获取本地ip地址,如果多个,选择第一个
-     * 
-     * @return
-     */
-    private String getLocalIp() {
-
-        try {
-            for (Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces(); e.hasMoreElements();) {
-
-                NetworkInterface item = e.nextElement();
-
-                for (InterfaceAddress address : item.getInterfaceAddresses()) {
-                    if (address.getAddress() instanceof Inet4Address) {
-                        Inet4Address inet4Address = (Inet4Address) address.getAddress();
-                        if (inet4Address.isLoopbackAddress()) {
-                            continue;
-                        }
-                        System.out.println(inet4Address.getHostAddress());
-                        return inet4Address.getHostAddress();
-                    }
-                }
-
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException("no ip");
-        }
-        throw new IllegalStateException("no ip");
-    }
 
 }
