@@ -17,8 +17,9 @@ public abstract class AbstractLoadBalanceStrategy implements ILoadBalanceStrateg
 
     @Override
     public InvokeConn select(List<InvokeConn> invokeConns,Invocation invocation) {
+
         if (CollectionUtils.isEmpty(invokeConns)){
-            return null;
+            throw new IllegalStateException("no valid provider exist online.");
         }
 
         if (invokeConns.size() == 1){

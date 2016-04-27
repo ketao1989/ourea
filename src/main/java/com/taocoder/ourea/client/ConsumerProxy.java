@@ -104,15 +104,15 @@ public class ConsumerProxy implements InvocationHandler {
     String exceptionMsg = null;
 
     do {
-
-      Invocation invocation = new Invocation(serviceInfo.getInterfaceClazz().getName(), method.getName());
-      InvokeConn invokeConn = loadBalanceStrategy.select(PROVIDER_CONN_LIST, invocation);
-      TProtocol protocol = new TBinaryProtocol(invokeConn.getConnPool().borrowObject());
-      TServiceClient client = serviceClientConstructor.newInstance(protocol);
-
       try {
+        Invocation invocation = new Invocation(serviceInfo.getInterfaceClazz().getName(), method.getName());
+        InvokeConn invokeConn = loadBalanceStrategy.select(PROVIDER_CONN_LIST, invocation);
+        TProtocol protocol = new TBinaryProtocol(invokeConn.getConnPool().borrowObject());
+        TServiceClient client = serviceClientConstructor.newInstance(protocol);
+
         return method.invoke(client, args);
       } catch (Exception e) {
+
         LOGGER.warn("invoke thrift rpc provider fail.e:", e);
         exceptionMsg = e.getMessage();
       }
@@ -147,7 +147,7 @@ public class ConsumerProxy implements InvocationHandler {
             PROVIDER_CONN_CONCURRENT_MAP.remove(entry.getKey());
           }
         }
-        PROVIDER_CONN_LIST = Lists.newArrayList( PROVIDER_CONN_CONCURRENT_MAP.values());
+        PROVIDER_CONN_LIST = Lists.newArrayList(PROVIDER_CONN_CONCURRENT_MAP.values());
       }
     };
     registry.subscribe(serviceInfo, listener);
