@@ -13,7 +13,12 @@ public class ZkThriftClientSample {
   public static void main(String[] args) throws Exception {
 
     Ourea.Iface client = ConsumerProxyFactory.getProxyClient(Ourea.Iface.class);
-    System.out.println(client.queryEcho("hello"));
+    int count =0;
+    long start = System.currentTimeMillis();
+    while (count++ <1000){
+      System.out.println(client.queryEcho("hello"));
+    }
+    System.out.println(System.currentTimeMillis() - start);
   }
 
 }

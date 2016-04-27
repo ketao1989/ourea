@@ -19,9 +19,11 @@ import com.taocoder.ourea.registry.IRegistry;
 import com.taocoder.ourea.registry.ZkRegistry;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.pool2.ObjectPool;
 import org.apache.thrift.TServiceClient;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,10 +106,14 @@ public class ConsumerProxy implements InvocationHandler {
     String exceptionMsg = null;
 
     do {
+
+      ObjectPool<TTransport> connPool = null;
+      TTransport transport = null;
       try {
         Invocation invocation = new Invocation(serviceInfo.getInterfaceClazz().getName(), method.getName());
-        InvokeConn invokeConn = loadBalanceStrategy.select(PROVIDER_CONN_LIST, invocation);
-        TProtocol protocol = new TBinaryProtocol(invokeConn.getConnPool().borrowObject());
+        connPool = loadBalanceStrategy.select(PROVIDER_CONN_LIST, invocation).getConnPool();
+        transport = connPool.borrowObject();
+        TProtocol protocol = new TBinaryProtocol(transport);
         TServiceClient client = serviceClientConstructor.newInstance(protocol);
 
         return method.invoke(client, args);
@@ -115,6 +121,10 @@ public class ConsumerProxy implements InvocationHandler {
 
         LOGGER.warn("invoke thrift rpc provider fail.e:", e);
         exceptionMsg = e.getMessage();
+      }finally {
+        if (connPool != null && transport != null ){
+          connPool.invalidateObject(transport);
+        }
       }
     } while (remainRetryTimes-- > 0);
 

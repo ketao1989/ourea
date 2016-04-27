@@ -28,13 +28,23 @@ public class InvokeConn implements Serializable {
     private GenericObjectPoolConfig poolConfig;
 
   public InvokeConn(ProviderInfo providerInfo) {
-    this(providerInfo, new GenericObjectPoolConfig());
+
+    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    config.setMaxTotal(100);
+    config.setMaxIdle(20);
+    config.setMinIdle(5);
+    config.setMaxWaitMillis(3000);
+
+    this.providerInfo = providerInfo;
+    this.poolConfig = config;
+    this.connPool = new GenericObjectPool<TTransport>(new ConsumerPoolFactory(providerInfo), poolConfig);
+
   }
 
   public InvokeConn(ProviderInfo providerInfo, GenericObjectPoolConfig poolConfig) {
     this.providerInfo = providerInfo;
     this.poolConfig = poolConfig;
-    connPool = new GenericObjectPool<TTransport>(new ConsumerPoolFactory(providerInfo),poolConfig);
+    this.connPool = new GenericObjectPool<TTransport>(new ConsumerPoolFactory(providerInfo), poolConfig);
   }
 
     public ProviderInfo getProviderInfo() {
