@@ -1,6 +1,6 @@
 /*
-* Copyright (c) 2015 taocoder.com. All Rights Reserved.
-*/
+ * Copyright (c) 2015 taocoder.com. All Rights Reserved.
+ */
 package com.taocoder.ourea.common;
 
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.util.Properties;
  */
 public class PropertiesUtils {
 
-    public static Properties load(String fileName){
+    public static Properties load(String fileName) {
 
         InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName);
         Properties properties = new Properties();

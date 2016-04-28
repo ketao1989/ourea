@@ -3,12 +3,12 @@
  */
 package com.taocoder.ourea.model;
 
+import java.io.Serializable;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-
-import java.io.Serializable;
 
 /**
  * 服务的地址和端口,权重暂时不使用.未来通过权重还设置负载均衡的比重

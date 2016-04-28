@@ -1,10 +1,11 @@
 /*
-* Copyright (c) 2015 taocoder.com. All Rights Reserved.
-*/
+ * Copyright (c) 2015 taocoder.com. All Rights Reserved.
+ */
 package com.taocoder.ourea.config;
 
-import com.taocoder.ourea.common.Constants;
 import org.apache.thrift.server.TServerEventHandler;
+
+import com.taocoder.ourea.common.Constants;
 
 /**
  * thrift 服务端相关配置
@@ -13,118 +14,118 @@ import org.apache.thrift.server.TServerEventHandler;
  */
 public class ThriftServerConfig {
 
-  /**
-   * 端口号
-   */
-  private int port;
+    /**
+     * 端口号
+     */
+    private int port;
 
-  /**
-   * server最小工作线程数
-   */
-  private int MinWorkerThreads = 10;
+    /**
+     * server最小工作线程数
+     */
+    private int MinWorkerThreads = 10;
 
-  /**
-   * server最大工作线程数
-   */
-  private int MaxWorkerThreads = 64;
+    /**
+     * server最大工作线程数
+     */
+    private int MaxWorkerThreads = 64;
 
-  /**
-   * server service 组
-   */
-  private String group = Constants.DEFAULT_GROUP_NAME;
+    /**
+     * server service 组
+     */
+    private String group = Constants.DEFAULT_GROUP_NAME;
 
-  /**
-   * 版本号
-   */
-  private String version = Constants.DEFAULT_VERSION_VALUE;
+    /**
+     * 版本号
+     */
+    private String version = Constants.DEFAULT_VERSION_VALUE;
 
-  /**
-   * 服务器权重设置
-   */
-  private int weight = Constants.DEFAULT_WEIGHT_VALUE;
+    /**
+     * 服务器权重设置
+     */
+    private int weight = Constants.DEFAULT_WEIGHT_VALUE;
 
-  /**
-   * 是否注册zk
-   */
-  private boolean directInvoke = false;
+    /**
+     * 是否注册zk
+     */
+    private boolean directInvoke = false;
 
-  /**
-   * 是否以daemon的形式运行
-   */
-  private boolean daemonRun = false;
+    /**
+     * 是否以daemon的形式运行
+     */
+    private boolean daemonRun = false;
 
-  /**
-   * thrift 服务handler
-   */
-  private TServerEventHandler serverEventHandler;
+    /**
+     * thrift 服务handler
+     */
+    private TServerEventHandler serverEventHandler;
 
-  public ThriftServerConfig(int port) {
-    this.port = port;
-  }
+    public ThriftServerConfig(int port) {
+        this.port = port;
+    }
 
-  public ThriftServerConfig(int port, boolean directInvoke, boolean daemonRun) {
-    this.port = port;
-    this.directInvoke = directInvoke;
-    this.daemonRun = daemonRun;
-  }
+    public ThriftServerConfig(int port, boolean directInvoke, boolean daemonRun) {
+        this.port = port;
+        this.directInvoke = directInvoke;
+        this.daemonRun = daemonRun;
+    }
 
-  public boolean isDirectInvoke() {
-    return directInvoke;
-  }
+    public boolean isDirectInvoke() {
+        return directInvoke;
+    }
 
-  public boolean isDaemonRun() {
-    return daemonRun;
-  }
+    public boolean isDaemonRun() {
+        return daemonRun;
+    }
 
-  public TServerEventHandler getServerEventHandler() {
-    return serverEventHandler;
-  }
+    public TServerEventHandler getServerEventHandler() {
+        return serverEventHandler;
+    }
 
-  public void setServerEventHandler(TServerEventHandler serverEventHandler) {
-    this.serverEventHandler = serverEventHandler;
-  }
+    public void setServerEventHandler(TServerEventHandler serverEventHandler) {
+        this.serverEventHandler = serverEventHandler;
+    }
 
-  public void setMinWorkerThreads(int minWorkerThreads) {
-    MinWorkerThreads = minWorkerThreads;
-  }
+    public int getPort() {
+        return port;
+    }
 
-  public void setMaxWorkerThreads(int maxWorkerThreads) {
-    MaxWorkerThreads = maxWorkerThreads;
-  }
+    public int getMinWorkerThreads() {
+        return MinWorkerThreads;
+    }
 
-  public void setGroup(String group) {
-    this.group = group;
-  }
+    public void setMinWorkerThreads(int minWorkerThreads) {
+        MinWorkerThreads = minWorkerThreads;
+    }
 
-  public void setVersion(String version) {
-    this.version = version;
-  }
+    public int getMaxWorkerThreads() {
+        return MaxWorkerThreads;
+    }
 
-  public int getPort() {
-    return port;
-  }
+    public void setMaxWorkerThreads(int maxWorkerThreads) {
+        MaxWorkerThreads = maxWorkerThreads;
+    }
 
-  public int getMinWorkerThreads() {
-    return MinWorkerThreads;
-  }
+    public String getGroup() {
+        return group;
+    }
 
-  public int getMaxWorkerThreads() {
-    return MaxWorkerThreads;
-  }
+    public void setGroup(String group) {
+        this.group = group;
+    }
 
-  public String getGroup() {
-    return group;
-  }
+    public String getVersion() {
+        return version;
+    }
 
-  public String getVersion() {
-    return version;
-  }
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
-  public int getWeight() {
-    return weight;
-  }
+    public int getWeight() {
+        return weight;
+    }
 
-  public void setWeight(int weight) {
-    this.weight = weight;
-  }
+    public void setWeight(int weight) {
+        this.weight = weight;
+    }
 }

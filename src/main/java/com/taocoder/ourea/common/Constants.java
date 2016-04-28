@@ -1,6 +1,6 @@
 /*
-* Copyright (c) 2015 ketao1989.github.com. All Rights Reserved.
-*/
+ * Copyright (c) 2015 ketao1989.github.com. All Rights Reserved.
+ */
 package com.taocoder.ourea.common;
 
 /**
@@ -30,5 +30,5 @@ public class Constants {
 
     public static final int DEFAULT_WEIGHT_VALUE = 0;
 
-    public static final int DEFAULT_TIMEOUT_VALUE = 1000 ;
+    public static final int DEFAULT_TIMEOUT_VALUE = 1000;
 }

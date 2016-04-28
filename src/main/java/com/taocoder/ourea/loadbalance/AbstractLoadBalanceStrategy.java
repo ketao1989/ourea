@@ -1,14 +1,14 @@
 /*
-* Copyright (c) 2015 ketao1989.github.com. All Rights Reserved.
-*/
+ * Copyright (c) 2015 ketao1989.github.com. All Rights Reserved.
+ */
 package com.taocoder.ourea.loadbalance;
 
-import com.taocoder.ourea.model.Invocation;
-import com.taocoder.ourea.model.InvokeConn;
+import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
 
-import java.util.List;
+import com.taocoder.ourea.model.Invocation;
+import com.taocoder.ourea.model.InvokeConn;
 
 /**
  * @author tao.ke Date: 16/3/3 Time: 下午3:17
@@ -16,18 +16,18 @@ import java.util.List;
 public abstract class AbstractLoadBalanceStrategy implements ILoadBalanceStrategy {
 
     @Override
-    public InvokeConn select(List<InvokeConn> invokeConns,Invocation invocation) {
+    public InvokeConn select(List<InvokeConn> invokeConns, Invocation invocation) {
 
-        if (CollectionUtils.isEmpty(invokeConns)){
+        if (CollectionUtils.isEmpty(invokeConns)) {
             throw new IllegalStateException("no valid provider exist online.");
         }
 
-        if (invokeConns.size() == 1){
+        if (invokeConns.size() == 1) {
             return invokeConns.get(0);
         }
 
-        return doSelect(invokeConns,invocation);
+        return doSelect(invokeConns, invocation);
     }
 
-    protected abstract InvokeConn doSelect(List<InvokeConn> invokeConns,Invocation invocation);
+    protected abstract InvokeConn doSelect(List<InvokeConn> invokeConns, Invocation invocation);
 }

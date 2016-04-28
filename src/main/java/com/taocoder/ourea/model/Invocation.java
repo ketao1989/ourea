@@ -3,10 +3,10 @@
  */
 package com.taocoder.ourea.model;
 
+import java.io.Serializable;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-
-import java.io.Serializable;
 
 /**
  * 调用方法相关属性,主要用来做负载均衡时,针对方法级别的RR

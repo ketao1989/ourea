@@ -3,10 +3,10 @@
  */
 package com.taocoder.ourea.model;
 
+import java.io.Serializable;
+
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-
-import java.io.Serializable;
 
 /**
  * 服务信息.id+interfaceName+version+group 唯一确定一个调用服务

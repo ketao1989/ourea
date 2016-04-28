@@ -5,7 +5,6 @@ package com.taocoder.ourea.provider;
 
 import com.taocoder.ourea.config.ThriftServerConfig;
 import com.taocoder.ourea.config.ZkConfig;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

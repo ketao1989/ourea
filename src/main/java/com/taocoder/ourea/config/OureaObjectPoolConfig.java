@@ -10,49 +10,49 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
  */
 public class OureaObjectPoolConfig extends GenericObjectPoolConfig {
 
-  /**
-   * 最大连接数
-   */
-  private int maxTotal = 100;
+    /**
+     * 最大连接数
+     */
+    private int maxTotal = 100;
 
-  /**
-   * 最大空闲连接数
-   */
-  private int maxIdle = 32;
+    /**
+     * 最大空闲连接数
+     */
+    private int maxIdle = 32;
 
-  /**
-   * 最小空闲连接数
-   */
-  private int minIdle = 10;
+    /**
+     * 最小空闲连接数
+     */
+    private int minIdle = 10;
 
-  public int getMaxTotal() {
-    return maxTotal;
-  }
+    public int getMaxTotal() {
+        return maxTotal;
+    }
 
-  public void setMaxTotal(int maxTotal) {
-    this.maxTotal = maxTotal;
-  }
+    public void setMaxTotal(int maxTotal) {
+        this.maxTotal = maxTotal;
+    }
 
-  public int getMaxIdle() {
-    return maxIdle;
-  }
+    public int getMaxIdle() {
+        return maxIdle;
+    }
 
-  public void setMaxIdle(int maxIdle) {
-    this.maxIdle = maxIdle;
-  }
+    public void setMaxIdle(int maxIdle) {
+        this.maxIdle = maxIdle;
+    }
 
-  public int getMinIdle() {
-    return minIdle;
-  }
+    public int getMinIdle() {
+        return minIdle;
+    }
 
-  public void setMinIdle(int minIdle) {
-    this.minIdle = minIdle;
-  }
+    public void setMinIdle(int minIdle) {
+        this.minIdle = minIdle;
+    }
 
-  @Override
-  public OureaObjectPoolConfig clone() {
+    @Override
+    public OureaObjectPoolConfig clone() {
 
-    return (OureaObjectPoolConfig) super.clone();
+        return (OureaObjectPoolConfig) super.clone();
 
-  }
+    }
 }
