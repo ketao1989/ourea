@@ -1,6 +1,6 @@
 /*
-* Copyright (c) 2015 taocoder.com. All Rights Reserved.
-*/
+ * Copyright (c) 2015 taocoder.com. All Rights Reserved.
+ */
 package com.taocoder.ourea;
 
 import com.taocoder.ourea.common.PropertiesUtils;
@@ -15,16 +15,15 @@ import java.util.Properties;
  */
 public class ZkThriftServerSample {
 
-  public static void main(String[] args) {
+    public static void main(String[] args) {
 
-    System.out.println(Ourea.Processor.class.getCanonicalName());
+        System.out.println(Ourea.Processor.class.getCanonicalName());
 
-    Properties properties = PropertiesUtils.load("provider.properties");
+        Properties properties = PropertiesUtils.load("provider.properties");
 
-    ServiceProviderFactory.exposeService(new OureaImpl(), false, false,
-        new ZkConfig(properties.getProperty("zkAddress")),
-        new ThriftServerConfig(Integer.valueOf(properties.getProperty("port"))));
+        ServiceProviderFactory.exposeService(new OureaImpl(), new ZkConfig(properties.getProperty("zkAddress")),
+                new ThriftServerConfig(Integer.valueOf(properties.getProperty("port"))));
 
-  }
+    }
 
 }

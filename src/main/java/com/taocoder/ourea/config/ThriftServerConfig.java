@@ -4,6 +4,7 @@
 package com.taocoder.ourea.config;
 
 import com.taocoder.ourea.common.Constants;
+import org.apache.thrift.server.TServerEventHandler;
 
 /**
  * thrift 服务端相关配置
@@ -42,8 +43,45 @@ public class ThriftServerConfig {
    */
   private int weight = Constants.DEFAULT_WEIGHT_VALUE;
 
+  /**
+   * 是否注册zk
+   */
+  private boolean directInvoke = false;
+
+  /**
+   * 是否以daemon的形式运行
+   */
+  private boolean daemonRun = false;
+
+  /**
+   * thrift 服务handler
+   */
+  private TServerEventHandler serverEventHandler;
+
   public ThriftServerConfig(int port) {
     this.port = port;
+  }
+
+  public ThriftServerConfig(int port, boolean directInvoke, boolean daemonRun) {
+    this.port = port;
+    this.directInvoke = directInvoke;
+    this.daemonRun = daemonRun;
+  }
+
+  public boolean isDirectInvoke() {
+    return directInvoke;
+  }
+
+  public boolean isDaemonRun() {
+    return daemonRun;
+  }
+
+  public TServerEventHandler getServerEventHandler() {
+    return serverEventHandler;
+  }
+
+  public void setServerEventHandler(TServerEventHandler serverEventHandler) {
+    this.serverEventHandler = serverEventHandler;
   }
 
   public void setMinWorkerThreads(int minWorkerThreads) {

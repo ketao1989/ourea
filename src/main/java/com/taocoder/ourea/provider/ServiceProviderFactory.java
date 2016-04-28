@@ -16,45 +16,35 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ServiceProviderFactory {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ServiceProviderFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceProviderFactory.class);
 
-  /**
-   * 根据实例对象的类名来缓存
-   */
-  private static final ConcurrentHashMap<Class, ServiceProvider> SERVICE_PROVIDER_CONCURRENT_MAP = new ConcurrentHashMap<Class, ServiceProvider>();
+    /**
+     * 根据实例对象的类名来缓存
+     */
+    private static final ConcurrentHashMap<Class, ServiceProvider> SERVICE_PROVIDER_CONCURRENT_MAP = new ConcurrentHashMap<Class, ServiceProvider>();
 
-  /**
-   * 创建SERVICE_PROVIDER_CONCURRENT_MAP时锁
-   */
-  private static final Object SERVICE_LOCK = new Object();
+    /**
+     * 创建SERVICE_PROVIDER_CONCURRENT_MAP时锁
+     */
+    private static final Object SERVICE_LOCK = new Object();
 
-  public static void exposeServiceDirect(Object ref, boolean daemonRun, ThriftServerConfig serverConfig) {
-    exposeService(ref, true, daemonRun, new ZkConfig(""), serverConfig);
-  }
+    public static void exposeService(Object ref, ZkConfig zkConfig, ThriftServerConfig serverConfig) {
 
-  public static void exposeServiceZk(Object ref, boolean daemonRun, ZkConfig zkConfig,
-      ThriftServerConfig serverConfig) {
-    exposeService(ref, false, daemonRun, zkConfig, serverConfig);
-  }
+        Class clazz = ref.getClass();
 
-  public static void exposeService(Object ref, boolean directInvoke, boolean daemonRun, ZkConfig zkConfig,
-      ThriftServerConfig serverConfig) {
+        ServiceProvider provider = SERVICE_PROVIDER_CONCURRENT_MAP.get(clazz);
 
-    Class clazz = ref.getClass();
-
-    ServiceProvider provider = SERVICE_PROVIDER_CONCURRENT_MAP.get(clazz);
-
-    if (provider == null) {
-      synchronized (SERVICE_LOCK) {
-        provider = SERVICE_PROVIDER_CONCURRENT_MAP.get(clazz);
         if (provider == null) {
+            synchronized (SERVICE_LOCK) {
+                provider = SERVICE_PROVIDER_CONCURRENT_MAP.get(clazz);
+                if (provider == null) {
 
-          provider = new ServiceProvider(ref, directInvoke, daemonRun, zkConfig, serverConfig);
-          provider.start();
-          SERVICE_PROVIDER_CONCURRENT_MAP.putIfAbsent(clazz, provider);
+                    provider = new ServiceProvider(ref, zkConfig, serverConfig);
+                    provider.start();
+                    SERVICE_PROVIDER_CONCURRENT_MAP.putIfAbsent(clazz, provider);
+                }
+            }
         }
-      }
     }
-  }
 
 }

@@ -12,12 +12,10 @@ import com.taocoder.ourea.model.ProviderInfo;
 import com.taocoder.ourea.model.ServiceInfo;
 import com.taocoder.ourea.registry.IRegistry;
 import com.taocoder.ourea.registry.ZkRegistry;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TServer;
-import org.apache.thrift.server.TServerEventHandler;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.slf4j.Logger;
@@ -38,21 +36,6 @@ public class ServiceProvider {
   private Object refImpl;
 
   /**
-   * 是否注册zk
-   */
-  private boolean directInvoke;
-
-  /**
-   * 是否以daemon的形式运行
-   */
-  private boolean daemonRun;
-
-  /**
-   * thrift 服务handler
-   */
-  private TServerEventHandler serverEventHandler;
-
-  /**
    * 注册服务
    */
   private IRegistry registry;
@@ -67,20 +50,14 @@ public class ServiceProvider {
    */
   private ThriftServerConfig serverConfig;
 
-  public ServiceProvider(Object refImpl, boolean directInvoke, boolean daemonRun, ZkConfig zkConfig, ThriftServerConfig serverConfig) {
+  public ServiceProvider(Object refImpl, ZkConfig zkConfig, ThriftServerConfig serverConfig) {
 
     if (refImpl == null) {
       throw new IllegalArgumentException("invalid refImpl instance.");
     }
     this.refImpl = refImpl;
-    this.directInvoke = directInvoke;
-    this.daemonRun = daemonRun;
     this.zkConfig = zkConfig;
     this.serverConfig = serverConfig;
-  }
-
-  public void setServerEventHandler(TServerEventHandler serverEventHandler) {
-    this.serverEventHandler = serverEventHandler;
   }
 
   /**
@@ -94,12 +71,12 @@ public class ServiceProvider {
     providerInfo.setWeight(serverConfig.getWeight());
 
     ServiceInfo serviceInfo = new ServiceInfo();
-    serviceInfo.setDirectInvoke(directInvoke);
+    serviceInfo.setDirectInvoke(serverConfig.isDirectInvoke());
     serviceInfo.setGroup(serverConfig.getGroup());
     serviceInfo.setInterfaceClazz(getIfaceClass());
     serviceInfo.setVersion(serverConfig.getVersion());
 
-    if (!directInvoke) {
+    if (!serverConfig.isDirectInvoke()) {
       zkRegister(providerInfo, serviceInfo);
     }
 
@@ -107,7 +84,7 @@ public class ServiceProvider {
       startServer();
     } catch (Exception e) {
       LOGGER.error("start thrift server fail.e:", e);
-      if (!directInvoke) {
+      if (!serverConfig.isDirectInvoke()) {
         unZkRegister(providerInfo, serviceInfo);
       }
     }
@@ -140,14 +117,14 @@ public class ServiceProvider {
     TProcessor tProcessor = getProcessorIface(getIfaceClass());
     args.processor(tProcessor);
     final TServer server = new TThreadPoolServer(args);
-    server.setServerEventHandler(serverEventHandler);
+    server.setServerEventHandler(serverConfig.getServerEventHandler());
     Thread thread = new Thread(new Runnable() {
       @Override
       public void run() {
         server.serve();
       }
     });
-    thread.setDaemon(daemonRun);
+    thread.setDaemon(serverConfig.isDaemonRun());
     thread.start();
     LOGGER.info("----------------start thrift server--------------");
   }
