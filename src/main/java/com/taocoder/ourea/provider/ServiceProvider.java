@@ -5,7 +5,8 @@ package com.taocoder.ourea.provider;
 
 import com.taocoder.ourea.common.Constants;
 import com.taocoder.ourea.common.LocalIpUtils;
-import com.taocoder.ourea.common.PropertiesUtils;
+import com.taocoder.ourea.config.ThriftServerConfig;
+import com.taocoder.ourea.config.ZkConfig;
 import com.taocoder.ourea.model.ProviderInfo;
 import com.taocoder.ourea.model.ServiceInfo;
 import com.taocoder.ourea.registry.IRegistry;
@@ -21,18 +22,14 @@ import org.apache.thrift.transport.TServerSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Properties;
-
 /**
  * 目前只支持Iface接口
  *
  * @author tao.ke Date: 16/4/25 Time: 下午10:00
  */
-public class ZkServiceProvider {
+public class ServiceProvider {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ZkServiceProvider.class);
-
-  private static final Properties properties = PropertiesUtils.load("provider.properties");
+  private static final Logger LOGGER = LoggerFactory.getLogger(ServiceProvider.class);
 
   /**
    * 接口实例
@@ -59,7 +56,17 @@ public class ZkServiceProvider {
    */
   private IRegistry registry;
 
-  public ZkServiceProvider(Object refImpl, boolean directInvoke, boolean daemonRun) {
+  /**
+   * server zk 配置
+   */
+  private ZkConfig zkConfig;
+
+  /**
+   * thrift server 配置
+   */
+  private ThriftServerConfig serverConfig;
+
+  public ServiceProvider(Object refImpl, boolean directInvoke, boolean daemonRun, ZkConfig zkConfig, ThriftServerConfig serverConfig) {
 
     if (refImpl == null) {
       throw new IllegalArgumentException("invalid refImpl instance.");
@@ -67,6 +74,8 @@ public class ZkServiceProvider {
     this.refImpl = refImpl;
     this.directInvoke = directInvoke;
     this.daemonRun = daemonRun;
+    this.zkConfig = zkConfig;
+    this.serverConfig = serverConfig;
   }
 
   public void setServerEventHandler(TServerEventHandler serverEventHandler) {
@@ -80,14 +89,14 @@ public class ZkServiceProvider {
 
     ProviderInfo providerInfo = new ProviderInfo();
     providerInfo.setIp(LocalIpUtils.getLocalIp());
-    providerInfo.setPort(Integer.parseInt(properties.getProperty("port")));
-    providerInfo.setWeight(1);
+    providerInfo.setPort(serverConfig.getPort());
+    providerInfo.setWeight(serverConfig.getWeight());
 
     ServiceInfo serviceInfo = new ServiceInfo();
     serviceInfo.setDirectInvoke(directInvoke);
-    serviceInfo.setGroup(properties.getProperty("group"));
+    serviceInfo.setGroup(serverConfig.getGroup());
     serviceInfo.setInterfaceClazz(getIfaceClass());
-    serviceInfo.setVersion(properties.getProperty("version"));
+    serviceInfo.setVersion(serverConfig.getVersion());
 
     if (!directInvoke) {
       zkRegister(providerInfo, serviceInfo);
@@ -110,8 +119,7 @@ public class ZkServiceProvider {
   private void zkRegister(ProviderInfo providerInfo, ServiceInfo serviceInfo) {
 
     // 创建一个新的register对象
-    registry = new ZkRegistry(properties.getProperty("zkAddress"),
-        Integer.parseInt(properties.getProperty("zkTimeout")));
+    registry = new ZkRegistry(zkConfig);
     registry.register(serviceInfo, providerInfo, Constants.DEFAULT_INVOKER_PROVIDER);
 
     System.out.println("--------------start zk register--------------------");
@@ -123,10 +131,10 @@ public class ZkServiceProvider {
    */
   private void startServer() throws Exception {
 
-    TServerSocket serverTransport = new TServerSocket(Integer.parseInt(properties.getProperty("port")));
+    TServerSocket serverTransport = new TServerSocket(serverConfig.getPort());
     TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverTransport);
-    args.maxWorkerThreads = Integer.parseInt(properties.getProperty("MaxWorkerThreads", "64"));
-    args.minWorkerThreads = Integer.parseInt(properties.getProperty("MinWorkerThreads", "10"));
+    args.maxWorkerThreads = serverConfig.getMaxWorkerThreads();
+    args.minWorkerThreads = serverConfig.getMinWorkerThreads();
     args.protocolFactory(new TBinaryProtocol.Factory());
 
     TProcessor tProcessor = getProcessorIface(getIfaceClass());

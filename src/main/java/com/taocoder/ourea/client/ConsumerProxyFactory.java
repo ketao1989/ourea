@@ -5,7 +5,8 @@ package com.taocoder.ourea.client;
 
 import com.google.common.base.Joiner;
 
-import com.taocoder.ourea.common.Constants;
+import com.taocoder.ourea.config.ThriftClientConfig;
+import com.taocoder.ourea.config.ZkConfig;
 import com.taocoder.ourea.model.ServiceInfo;
 
 import org.slf4j.Logger;
@@ -27,18 +28,14 @@ public class ConsumerProxyFactory {
 
   private static final Object SERVICE_CLIENT_LOCK = new Object();
 
-  public static  <T> T getProxyClient(Class<T> clientClazz){
-    return getProxyClient(clientClazz, Constants.DEFAULT_GROUP_NAME);
-  }
-
-  public static  <T> T getProxyClient(Class<T> clientClazz,String group){
-    return getProxyClient(clientClazz,Constants.DEFAULT_GROUP_NAME,Constants.DEFAULT_VERSION_VALUE);
+  public static <T> T getProxyClient(Class<T> clientClazz, ZkConfig zkConfig) {
+    return getProxyClient(clientClazz, new ThriftClientConfig(), zkConfig);
   }
 
   @SuppressWarnings("unchecked")
-  public static  <T> T getProxyClient(Class<T> clientClazz,String group,String version){
+  public static <T> T getProxyClient(Class<T> clientClazz, ThriftClientConfig config, ZkConfig zkConfig) {
 
-    String clientKey = CLIENT_KEY_JOINER.join(clientClazz.getCanonicalName(),group,version);
+    String clientKey = CLIENT_KEY_JOINER.join(clientClazz.getCanonicalName(), config.getGroup(), config.getVersion());
     T client = (T) SERVICE_CLIENT_CONCURRENT_HASH_MAP.get(clientKey);
 
     if (client == null){
@@ -46,9 +43,10 @@ public class ConsumerProxyFactory {
         client = (T) SERVICE_CLIENT_CONCURRENT_HASH_MAP.get(clientKey);
         if (client == null){
 
-          final ServiceInfo serviceInfo = new ServiceInfo(clientClazz,version,group);
+          final ServiceInfo serviceInfo = new ServiceInfo(clientClazz, config.getVersion(), config.getGroup());
 
-          client =(T) Proxy.newProxyInstance(ConsumerProxyFactory.class.getClassLoader(),new Class[]{clientClazz},new ConsumerProxy(serviceInfo));
+          client = (T) Proxy.newProxyInstance(ConsumerProxyFactory.class.getClassLoader(), new Class[] { clientClazz },
+              new ConsumerProxy(serviceInfo, zkConfig, config.getLoadBalanceStrategy()));
           SERVICE_CLIENT_CONCURRENT_HASH_MAP.putIfAbsent(clientKey,client);
         }
       }

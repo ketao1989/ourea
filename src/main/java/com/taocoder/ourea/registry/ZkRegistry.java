@@ -7,6 +7,7 @@ import com.google.common.base.Joiner;
 
 import com.taocoder.ourea.common.Constants;
 import com.taocoder.ourea.common.ProviderInfoUtils;
+import com.taocoder.ourea.config.ZkConfig;
 import com.taocoder.ourea.model.ProviderInfo;
 import com.taocoder.ourea.model.ServiceInfo;
 
@@ -34,10 +35,13 @@ public class ZkRegistry implements IRegistry {
 
   private CuratorFramework zkClient;
 
-  public ZkRegistry(String zkAddress, int zkTimeout) {
+  public ZkRegistry(ZkConfig zkConfig) {
 
-    zkClient = CuratorFrameworkFactory.builder().connectString(zkAddress).sessionTimeoutMs(zkTimeout)
-        .retryPolicy(new BoundedExponentialBackoffRetry(10, 1000, 3)).build();
+    zkClient = CuratorFrameworkFactory.builder().connectString(zkConfig.getZkAddress())
+        .sessionTimeoutMs(zkConfig.getZkTimeout())
+        .retryPolicy(new BoundedExponentialBackoffRetry(zkConfig.getBaseSleepTimeMs(), zkConfig.getMaxSleepTimeMs(),
+            zkConfig.getMaxRetries()))
+        .build();
 
     zkClient.start();
   }

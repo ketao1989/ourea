@@ -7,9 +7,8 @@ import com.google.common.collect.Lists;
 
 import com.taocoder.ourea.common.Constants;
 import com.taocoder.ourea.common.LocalIpUtils;
-import com.taocoder.ourea.common.PropertiesUtils;
+import com.taocoder.ourea.config.ZkConfig;
 import com.taocoder.ourea.loadbalance.ILoadBalanceStrategy;
-import com.taocoder.ourea.loadbalance.RoundRobinLoadBalanceStrategy;
 import com.taocoder.ourea.model.Invocation;
 import com.taocoder.ourea.model.InvokeConn;
 import com.taocoder.ourea.model.ProviderInfo;
@@ -32,7 +31,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -43,8 +41,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class ConsumerProxy implements InvocationHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerProxy.class);
-
-  private static final Properties properties = PropertiesUtils.load("consumer.properties");
 
   /**
    * 本机信息
@@ -82,19 +78,21 @@ public class ConsumerProxy implements InvocationHandler {
   private ILoadBalanceStrategy loadBalanceStrategy;
 
   /**
+   * zk相关配置
+   */
+  private ZkConfig zkConfig;
+
+  /**
    * 注册服务
    */
   private IRegistry registry;
 
   private Constructor<TServiceClient> serviceClientConstructor;
 
-  public ConsumerProxy(ServiceInfo serviceInfo) {
-    this(serviceInfo, new RoundRobinLoadBalanceStrategy());
-  }
-
-  public ConsumerProxy(ServiceInfo serviceInfo, ILoadBalanceStrategy loadBalanceStrategy) {
+  public ConsumerProxy(ServiceInfo serviceInfo, ZkConfig zkConfig, ILoadBalanceStrategy loadBalanceStrategy) {
     this.serviceInfo = serviceInfo;
     this.loadBalanceStrategy = loadBalanceStrategy;
+    this.zkConfig = zkConfig;
     this.serviceClientConstructor = getClientConstructorClazz();
     initZkConsumer();
   }
@@ -136,8 +134,7 @@ public class ConsumerProxy implements InvocationHandler {
    */
   public void initZkConsumer() {
 
-    registry = new ZkRegistry(properties.getProperty("zkAddress"),
-        Integer.parseInt(properties.getProperty("zkTimeout")));
+    registry = new ZkRegistry(zkConfig);
 
     registry.register(serviceInfo, PROVIDER_INFO, Constants.DEFAULT_INVOKER_CONSUMER);
 
