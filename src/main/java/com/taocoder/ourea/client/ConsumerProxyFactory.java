@@ -46,7 +46,7 @@ public class ConsumerProxyFactory {
           final ServiceInfo serviceInfo = new ServiceInfo(clientClazz, config.getVersion(), config.getGroup());
 
           client = (T) Proxy.newProxyInstance(ConsumerProxyFactory.class.getClassLoader(), new Class[] { clientClazz },
-              new ConsumerProxy(serviceInfo, zkConfig, config.getLoadBalanceStrategy()));
+              new ConsumerProxy(serviceInfo, zkConfig, config));
           SERVICE_CLIENT_CONCURRENT_HASH_MAP.putIfAbsent(clientKey,client);
         }
       }

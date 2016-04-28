@@ -24,11 +24,7 @@ public class ConsumerPoolFactory implements PooledObjectFactory<TTransport> {
   /**
    * 调用服务的超时时间
    */
-  private int timeout = 1000;
-
-  public ConsumerPoolFactory(ProviderInfo providerInfo) {
-    this.providerInfo = providerInfo;
-  }
+  private int timeout;
 
   public ConsumerPoolFactory(ProviderInfo providerInfo, int timeout) {
     this.providerInfo = providerInfo;

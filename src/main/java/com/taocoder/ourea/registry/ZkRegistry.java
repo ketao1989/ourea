@@ -18,6 +18,8 @@ import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.curator.retry.BoundedExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.WatchedEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -28,6 +30,7 @@ import java.util.List;
  */
 public class ZkRegistry implements IRegistry {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZkRegistry.class);
   /**
    * 包含ip,port,weight
    */
@@ -68,10 +71,12 @@ public class ZkRegistry implements IRegistry {
     try {
 
       zkClient.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(path);
+      LOGGER.info("register thrift service in path :{}", path);
 
     } catch (Exception e) {
       // handle exception
-      e.printStackTrace();
+      LOGGER.error("register thrift service error.path:{},e:", path, e);
+
     }
 
   }

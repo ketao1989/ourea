@@ -25,6 +25,11 @@ public class ThriftClientConfig {
   private String version;
 
   /**
+   * 超时时间
+   */
+  private int timeout;
+
+  /**
    * 服务client的负载策略
    */
   private ILoadBalanceStrategy loadBalanceStrategy;
@@ -34,12 +39,17 @@ public class ThriftClientConfig {
   }
 
   public ThriftClientConfig(String group, String version) {
-    this(group, version, new RoundRobinLoadBalanceStrategy());
+    this(group, version, Constants.DEFAULT_TIMEOUT_VALUE);
   }
 
-  public ThriftClientConfig(String group, String version, ILoadBalanceStrategy loadBalanceStrategy) {
+  public ThriftClientConfig(String group, String version, int timeout) {
+    this(group, version, timeout, new RoundRobinLoadBalanceStrategy());
+  }
+
+  public ThriftClientConfig(String group, String version, int timeout, ILoadBalanceStrategy loadBalanceStrategy) {
     this.group = group;
     this.version = version;
+    this.timeout = timeout;
     this.loadBalanceStrategy = loadBalanceStrategy;
   }
 
@@ -49,6 +59,10 @@ public class ThriftClientConfig {
 
   public String getVersion() {
     return version;
+  }
+
+  public int getTimeout() {
+    return timeout;
   }
 
   public ILoadBalanceStrategy getLoadBalanceStrategy() {

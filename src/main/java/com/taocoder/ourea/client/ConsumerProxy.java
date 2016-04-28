@@ -7,8 +7,8 @@ import com.google.common.collect.Lists;
 
 import com.taocoder.ourea.common.Constants;
 import com.taocoder.ourea.common.LocalIpUtils;
+import com.taocoder.ourea.config.ThriftClientConfig;
 import com.taocoder.ourea.config.ZkConfig;
-import com.taocoder.ourea.loadbalance.ILoadBalanceStrategy;
 import com.taocoder.ourea.model.Invocation;
 import com.taocoder.ourea.model.InvokeConn;
 import com.taocoder.ourea.model.ProviderInfo;
@@ -75,7 +75,7 @@ public class ConsumerProxy implements InvocationHandler {
   /**
    * 负载策略
    */
-  private ILoadBalanceStrategy loadBalanceStrategy;
+  private ThriftClientConfig clientConfig;
 
   /**
    * zk相关配置
@@ -87,11 +87,14 @@ public class ConsumerProxy implements InvocationHandler {
    */
   private IRegistry registry;
 
+  /**
+   * TServiceClient 构造器
+   */
   private Constructor<TServiceClient> serviceClientConstructor;
 
-  public ConsumerProxy(ServiceInfo serviceInfo, ZkConfig zkConfig, ILoadBalanceStrategy loadBalanceStrategy) {
+  public ConsumerProxy(ServiceInfo serviceInfo, ZkConfig zkConfig, ThriftClientConfig clientConfig) {
     this.serviceInfo = serviceInfo;
-    this.loadBalanceStrategy = loadBalanceStrategy;
+    this.clientConfig = clientConfig;
     this.zkConfig = zkConfig;
     this.serviceClientConstructor = getClientConstructorClazz();
     initZkConsumer();
@@ -109,7 +112,7 @@ public class ConsumerProxy implements InvocationHandler {
       TTransport transport = null;
       try {
         Invocation invocation = new Invocation(serviceInfo.getInterfaceClazz().getName(), method.getName());
-        connPool = loadBalanceStrategy.select(PROVIDER_CONN_LIST, invocation).getConnPool();
+        connPool = clientConfig.getLoadBalanceStrategy().select(PROVIDER_CONN_LIST, invocation).getConnPool();
         transport = connPool.borrowObject();
         TProtocol protocol = new TBinaryProtocol(transport);
         TServiceClient client = serviceClientConstructor.newInstance(protocol);
@@ -144,7 +147,7 @@ public class ConsumerProxy implements InvocationHandler {
         synchronized (PROVIDER_CONN_LOCK) {
           for (ProviderInfo info : providerInfos) {
             if (!PROVIDER_CONN_CONCURRENT_MAP.containsKey(info)) {
-              InvokeConn invokeConn = new InvokeConn(info);
+              InvokeConn invokeConn = new InvokeConn(info,clientConfig.getTimeout());
               PROVIDER_CONN_CONCURRENT_MAP.putIfAbsent(info, invokeConn);
             }
           }

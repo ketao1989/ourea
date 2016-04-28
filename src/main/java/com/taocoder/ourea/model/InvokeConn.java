@@ -22,20 +22,29 @@ public class InvokeConn implements Serializable {
 
   private static final long serialVersionUID = -805739143582019252L;
 
+  /**
+   * 服务端的信息ip+port
+   */
   private ProviderInfo providerInfo;
 
+  /**
+   * 和server端的连接池
+   */
   private ObjectPool<TTransport> connPool;
 
+  /**
+   * 连接池相关配置
+   */
   private OureaObjectPoolConfig poolConfig;
 
-  public InvokeConn(ProviderInfo providerInfo) {
-    this(providerInfo,new OureaObjectPoolConfig());
+  public InvokeConn(ProviderInfo providerInfo, int timeout) {
+    this(providerInfo, timeout, new OureaObjectPoolConfig());
   }
 
-  public InvokeConn(ProviderInfo providerInfo, OureaObjectPoolConfig poolConfig) {
+  public InvokeConn(ProviderInfo providerInfo, int timeout, OureaObjectPoolConfig poolConfig) {
     this.providerInfo = providerInfo;
     this.poolConfig = poolConfig;
-    this.connPool = new GenericObjectPool<TTransport>(new ConsumerPoolFactory(providerInfo), poolConfig);
+    this.connPool = new GenericObjectPool<TTransport>(new ConsumerPoolFactory(providerInfo, timeout), poolConfig);
   }
 
   public ProviderInfo getProviderInfo() {
