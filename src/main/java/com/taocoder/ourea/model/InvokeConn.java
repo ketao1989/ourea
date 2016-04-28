@@ -3,15 +3,16 @@
  */
 package com.taocoder.ourea.model;
 
-import java.io.Serializable;
-
+import com.taocoder.ourea.client.ConsumerPoolFactory;
+import com.taocoder.ourea.config.OureaObjectPoolConfig;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.thrift.transport.TTransport;
 
-import com.taocoder.ourea.client.ConsumerPoolFactory;
-import com.taocoder.ourea.config.OureaObjectPoolConfig;
+import java.io.Serializable;
 
 /**
  * 对于一个provider server的连接池对象.这个对象很重,所以需要缓存之后在使用
@@ -65,5 +66,25 @@ public class InvokeConn implements Serializable {
 
     public void setPoolConfig(OureaObjectPoolConfig poolConfig) {
         this.poolConfig = poolConfig;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        InvokeConn conn = (InvokeConn) o;
+
+        return new EqualsBuilder()
+                .append(providerInfo, conn.providerInfo)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(providerInfo)
+                .toHashCode();
     }
 }

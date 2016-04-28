@@ -3,27 +3,10 @@
  */
 package com.taocoder.ourea.client;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.pool2.ObjectPool;
-import org.apache.thrift.TServiceClient;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TTransport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Lists;
 import com.taocoder.ourea.common.Constants;
 import com.taocoder.ourea.common.LocalIpUtils;
+import com.taocoder.ourea.common.OureaConnCreateException;
 import com.taocoder.ourea.common.OureaException;
 import com.taocoder.ourea.config.ThriftClientConfig;
 import com.taocoder.ourea.config.ZkConfig;
@@ -34,6 +17,24 @@ import com.taocoder.ourea.model.ServiceInfo;
 import com.taocoder.ourea.registry.INotifyListener;
 import com.taocoder.ourea.registry.IRegistry;
 import com.taocoder.ourea.registry.ZkRegistry;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.thrift.TServiceClient;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TTransport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author tao.ke Date: 16/4/25 Time: 下午3:20
@@ -50,19 +51,22 @@ public class ConsumerProxy implements InvocationHandler {
     /**
      * service 对外提供服务的provider的连接
      */
-    private static final ConcurrentHashMap<ProviderInfo, InvokeConn> PROVIDER_CONN_CONCURRENT_MAP = new ConcurrentHashMap<ProviderInfo, InvokeConn>();
+    private final ConcurrentHashMap<ProviderInfo, InvokeConn> PROVIDER_CONN_CONCURRENT_MAP = new ConcurrentHashMap<ProviderInfo, InvokeConn>();
     /**
      * 对PROVIDER_CONN_CONCURRENT_MAP操作时,需要获取锁.读不需要
      */
-    private static final Object PROVIDER_CONN_LOCK = new Object();
-    /**
-     * 重试次数
-     */
-    private static final int RETRY_TIMES = 1;
+    private final Object PROVIDER_CONN_LOCK = new Object();
+
     /**
      * 所有服务的list表,冗余PROVIDER_CONN_CONCURRENT_MAP,便于获取连接时,直接获取.
      */
-    private static List<InvokeConn> PROVIDER_CONN_LIST = new CopyOnWriteArrayList<InvokeConn>();
+    private CopyOnWriteArrayList<InvokeConn> PROVIDER_CONN_LIST = new CopyOnWriteArrayList<InvokeConn>();
+
+    /**
+     * 创建连接的时候,发现失败的连接列表
+     */
+    private CopyOnWriteArrayList<InvokeConn> PROVIDER_FAIL_CONN_LIST = new CopyOnWriteArrayList<InvokeConn>();
+
     /**
      * 调用的class
      */
@@ -94,6 +98,7 @@ public class ConsumerProxy implements InvocationHandler {
         this.zkConfig = zkConfig;
         this.serviceClientConstructor = getClientConstructorClazz();
         initZkConsumer();
+        initScanFailConn();
     }
 
     @Override
@@ -106,16 +111,25 @@ public class ConsumerProxy implements InvocationHandler {
 
             ObjectPool<TTransport> connPool = null;
             TTransport transport = null;
+            InvokeConn conn = null;
             try {
                 Invocation invocation = new Invocation(serviceInfo.getInterfaceClazz().getName(), method.getName());
-                connPool = clientConfig.getLoadBalanceStrategy().select(PROVIDER_CONN_LIST, invocation).getConnPool();
+                conn = clientConfig.getLoadBalanceStrategy().select(PROVIDER_CONN_LIST, invocation);
+                connPool = conn.getConnPool();
                 transport = connPool.borrowObject();
                 TProtocol protocol = new TBinaryProtocol(transport);
                 TServiceClient client = serviceClientConstructor.newInstance(protocol);
 
                 return method.invoke(client, args);
             } catch (Exception e) {
-
+                // 服务多次重试连接不上,则直接将该服务对应信息移除
+                if (e instanceof OureaConnCreateException) {
+                    synchronized (PROVIDER_CONN_LOCK) {
+                        if (PROVIDER_CONN_LIST.remove(conn)) {
+                            PROVIDER_FAIL_CONN_LIST.add(conn);
+                        }
+                    }
+                }
                 LOGGER.warn("invoke thrift rpc provider fail.e:", e);
                 exceptionMsg = e.getMessage();
             } finally {
@@ -153,10 +167,28 @@ public class ConsumerProxy implements InvocationHandler {
                         PROVIDER_CONN_CONCURRENT_MAP.remove(entry.getKey());
                     }
                 }
-                PROVIDER_CONN_LIST = Lists.newArrayList(PROVIDER_CONN_CONCURRENT_MAP.values());
+                PROVIDER_CONN_LIST = Lists.newCopyOnWriteArrayList(PROVIDER_CONN_CONCURRENT_MAP.values());
+                PROVIDER_FAIL_CONN_LIST = Lists.newCopyOnWriteArrayList();
             }
         };
         registry.subscribe(serviceInfo, listener);
+    }
+
+    /**
+     * 定时10s扫描失败的conn,看是否网络恢复可以提供访问.
+     */
+    private void initScanFailConn() {
+
+        new ScheduledThreadPoolExecutor(1).schedule(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (PROVIDER_CONN_LOCK) {
+                    // 这里简单处理,把确定活的交给业务处理,一般30s内,zk是会触发listener的.
+                    // 如果过了30s还未被zk listener清空,说明只是网络暂时慢,可以让业务再重试看看
+                    PROVIDER_CONN_LIST.addAll(PROVIDER_FAIL_CONN_LIST);
+                }
+            }
+        }, 30L, TimeUnit.SECONDS);
     }
 
     private Constructor<TServiceClient> getClientConstructorClazz() {

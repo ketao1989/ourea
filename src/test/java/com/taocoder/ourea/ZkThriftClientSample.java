@@ -3,11 +3,11 @@
  */
 package com.taocoder.ourea;
 
-import java.util.Properties;
-
 import com.taocoder.ourea.client.ConsumerProxyFactory;
 import com.taocoder.ourea.common.PropertiesUtils;
 import com.taocoder.ourea.config.ZkConfig;
+
+import java.util.Properties;
 
 /**
  * @author tao.ke Date: 16/4/27 Time: 下午5:03
@@ -23,6 +23,7 @@ public class ZkThriftClientSample {
         int count = 0;
         long start = System.currentTimeMillis();
         while (count++ < 1000) {
+            Thread.sleep(1000);
             System.out.println(count + "-----" + client.queryEcho("hello"));
         }
         System.out.println(System.currentTimeMillis() - start);

@@ -3,6 +3,7 @@
  */
 package com.taocoder.ourea.client;
 
+import com.taocoder.ourea.common.OureaConnCreateException;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
@@ -36,19 +37,29 @@ public class ConsumerPoolFactory implements PooledObjectFactory<TTransport> {
         this.timeout = timeout;
     }
 
+    /**
+     * 这个地方创建连接的时候,如果创建失败,重试一次,还不行则抛出异常,把该节点暂时移除
+     * 
+     * @return
+     * @throws Exception
+     */
     @Override
     public PooledObject<TTransport> makeObject() throws Exception {
         TTransport transport = null;
-        try {
-            transport = new TSocket(providerInfo.getIp(), providerInfo.getPort(), timeout);
-
-            transport.open();
-            ((TSocket) transport).setTimeout(timeout);
-            return new DefaultPooledObject<TTransport>(transport);
-        } catch (Exception e) {
-            LOGGER.error("client make transport for pool fail.e:", e);
-            throw new OureaException("make transport object." + e.getMessage());
-        }
+        Exception ex = null;
+        int retryConn = 1;
+        do {
+            try {
+                transport = new TSocket(providerInfo.getIp(), providerInfo.getPort(), timeout);
+                transport.open();
+                ((TSocket) transport).setTimeout(timeout);
+                return new DefaultPooledObject<TTransport>(transport);
+            } catch (Exception e) {
+                ex = e;
+            }
+        } while (retryConn-- > 0);
+        LOGGER.error("make transport object fail.e:", ex);
+        throw new OureaConnCreateException("make transport object fail." + ex.getMessage());
     }
 
     @Override
