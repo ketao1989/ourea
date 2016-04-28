@@ -8,4 +8,7 @@ package com.taocoder.ourea.common;
  */
 public class OureaException  extends RuntimeException {
 
+  public OureaException(String message) {
+    super(message);
+  }
 }

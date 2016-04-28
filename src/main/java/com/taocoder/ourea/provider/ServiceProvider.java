@@ -5,6 +5,7 @@ package com.taocoder.ourea.provider;
 
 import com.taocoder.ourea.common.Constants;
 import com.taocoder.ourea.common.LocalIpUtils;
+import com.taocoder.ourea.common.OureaException;
 import com.taocoder.ourea.config.ThriftServerConfig;
 import com.taocoder.ourea.config.ZkConfig;
 import com.taocoder.ourea.model.ProviderInfo;
@@ -106,7 +107,6 @@ public class ServiceProvider {
       startServer();
     } catch (Exception e) {
       LOGGER.error("start thrift server fail.e:", e);
-
       if (!directInvoke) {
         unZkRegister(providerInfo, serviceInfo);
       }
@@ -122,7 +122,7 @@ public class ServiceProvider {
     registry = new ZkRegistry(zkConfig);
     registry.register(serviceInfo, providerInfo, Constants.DEFAULT_INVOKER_PROVIDER);
 
-    System.out.println("--------------start zk register--------------------");
+    LOGGER.info("--------------start zk register--------------------");
 
   }
 
@@ -145,11 +145,11 @@ public class ServiceProvider {
       @Override
       public void run() {
         server.serve();
-        System.out.println("----------------start thrift server--------------");
       }
     });
     thread.setDaemon(daemonRun);
     thread.start();
+    LOGGER.info("----------------start thrift server--------------");
   }
 
   /**
@@ -179,7 +179,7 @@ public class ServiceProvider {
         return clazz;
       }
     }
-    throw new IllegalArgumentException("refImpl is not thrift iface implement.");
+    throw new OureaException("refImpl is not thrift iface implement.");
   }
 
   /**
@@ -191,7 +191,7 @@ public class ServiceProvider {
 
     if (iface == null) {
       LOGGER.error("refImpl is not thrift implement class instance.");
-      throw new IllegalArgumentException("invalid refImpl params");
+      throw new OureaException("invalid null refImpl params");
     }
 
     String parentClazzName = StringUtils.substringBeforeLast(iface.getCanonicalName(), ".Iface");
@@ -207,8 +207,8 @@ public class ServiceProvider {
       }
       return null;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new IllegalArgumentException("invalid refImpl params");
+      LOGGER.error("get thrift Porcessor class from Iface class fail.e:",e);
+      throw new OureaException("invalid iface class params maybe not thrift class.");
     }
   }
 

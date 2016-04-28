@@ -3,6 +3,7 @@
  */
 package com.taocoder.ourea.client;
 
+import com.taocoder.ourea.common.OureaException;
 import com.taocoder.ourea.model.ProviderInfo;
 
 import org.apache.commons.pool2.PooledObject;
@@ -10,11 +11,15 @@ import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author tao.ke Date: 16/4/25 Time: 下午4:46
  */
 public class ConsumerPoolFactory implements PooledObjectFactory<TTransport> {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerPoolFactory.class);
 
   /**
    * 服务提供者的信息
@@ -34,19 +39,31 @@ public class ConsumerPoolFactory implements PooledObjectFactory<TTransport> {
   @Override
   public PooledObject<TTransport> makeObject() throws Exception {
     TTransport transport = null;
-    transport = new TSocket(providerInfo.getIp(),providerInfo.getPort(),timeout);
-    transport.open();
-    ((TSocket)transport).setTimeout(timeout);
-    return new DefaultPooledObject<TTransport>(transport);
+    try {
+      transport = new TSocket(providerInfo.getIp(), providerInfo.getPort(), timeout);
+
+      transport.open();
+      ((TSocket) transport).setTimeout(timeout);
+      return new DefaultPooledObject<TTransport>(transport);
+    } catch (Exception e) {
+      LOGGER.error("client make transport for pool fail.e:", e);
+      throw new OureaException("make transport object." + e.getMessage());
+    }
   }
 
   @Override
   public void destroyObject(PooledObject<TTransport> p) throws Exception {
 
-    TTransport transport = p.getObject();
-    if (transport.isOpen()){
-      transport.close();
+    try {
+      TTransport transport = p.getObject();
+      if (transport.isOpen()) {
+        transport.close();
+      }
+    } catch (Exception e) {
+      LOGGER.error("destroy transport object fail.maybe exist memory leek.e:", e);
+      throw new OureaException("destroy transport object fail" + e.getMessage());
     }
+
   }
 
   @Override

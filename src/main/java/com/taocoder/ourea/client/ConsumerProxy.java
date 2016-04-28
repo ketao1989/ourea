@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 
 import com.taocoder.ourea.common.Constants;
 import com.taocoder.ourea.common.LocalIpUtils;
+import com.taocoder.ourea.common.OureaException;
 import com.taocoder.ourea.config.ThriftClientConfig;
 import com.taocoder.ourea.config.ZkConfig;
 import com.taocoder.ourea.model.Invocation;
@@ -103,7 +104,7 @@ public class ConsumerProxy implements InvocationHandler {
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
-    int remainRetryTimes = RETRY_TIMES;
+    int remainRetryTimes = clientConfig.getRetryTimes();
     String exceptionMsg = null;
 
     do {
@@ -129,7 +130,7 @@ public class ConsumerProxy implements InvocationHandler {
       }
     } while (remainRetryTimes-- > 0);
 
-    throw new IllegalStateException("invoke fail.msg:" + exceptionMsg);
+    throw new OureaException("invoke fail.msg:" + exceptionMsg);
   }
 
   /**
@@ -173,9 +174,10 @@ public class ConsumerProxy implements InvocationHandler {
       return ((Class<TServiceClient>) Class.forName(clientClazzName)).getConstructor(TProtocol.class);
     } catch (Exception e) {
       //
-      e.printStackTrace();
+      LOGGER.error("get thrift client class constructor fail.e:", e);
+      throw new IllegalArgumentException("invalid iface implement");
     }
-    throw new IllegalArgumentException("invalid iface implement");
+
   }
 
 }

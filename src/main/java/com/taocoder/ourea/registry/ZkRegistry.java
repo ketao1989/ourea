@@ -6,6 +6,7 @@ package com.taocoder.ourea.registry;
 import com.google.common.base.Joiner;
 
 import com.taocoder.ourea.common.Constants;
+import com.taocoder.ourea.common.OureaException;
 import com.taocoder.ourea.common.ProviderInfoUtils;
 import com.taocoder.ourea.config.ZkConfig;
 import com.taocoder.ourea.model.ProviderInfo;
@@ -76,7 +77,7 @@ public class ZkRegistry implements IRegistry {
     } catch (Exception e) {
       // handle exception
       LOGGER.error("register thrift service error.path:{},e:", path, e);
-
+      throw new OureaException("register thrift service error." + e.getMessage());
     }
 
   }
@@ -93,7 +94,8 @@ public class ZkRegistry implements IRegistry {
     try {
       zkClient.delete().forPath(path);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOGGER.error("unregister thrift service error.path:{},e:", path, e);
+      throw new OureaException("unregister thrift service error." + e.getMessage());
     }
   }
 
@@ -114,10 +116,17 @@ public class ZkRegistry implements IRegistry {
 
       listener.notify(ProviderInfoUtils.convertZkChildren(nodes));
     } catch (Exception e) {
-      e.printStackTrace();
+      LOGGER.error("subscribe thrift service error.path:{},e:", parentPath, e);
+      throw new OureaException("subscribe thrift service error." + e.getMessage());
     }
   }
 
+  /**
+   * thrift内部类的类名不一致,这里统一一种,保证发布订阅是一样的
+   * 
+   * @param info
+   * @return
+   */
   private String adjustClazzName(ServiceInfo info) {
 
     String clazzName = info.getInterfaceClazz().getCanonicalName();

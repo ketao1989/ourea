@@ -30,6 +30,11 @@ public class ThriftClientConfig {
   private int timeout;
 
   /**
+   * 服务重试次数,默认重试一次
+   */
+  private int retryTimes = 1;
+
+  /**
    * 服务client的负载策略
    */
   private ILoadBalanceStrategy loadBalanceStrategy;
@@ -39,17 +44,12 @@ public class ThriftClientConfig {
   }
 
   public ThriftClientConfig(String group, String version) {
-    this(group, version, Constants.DEFAULT_TIMEOUT_VALUE);
+    this(group, version, new RoundRobinLoadBalanceStrategy());
   }
 
-  public ThriftClientConfig(String group, String version, int timeout) {
-    this(group, version, timeout, new RoundRobinLoadBalanceStrategy());
-  }
-
-  public ThriftClientConfig(String group, String version, int timeout, ILoadBalanceStrategy loadBalanceStrategy) {
+  public ThriftClientConfig(String group, String version, ILoadBalanceStrategy loadBalanceStrategy) {
     this.group = group;
     this.version = version;
-    this.timeout = timeout;
     this.loadBalanceStrategy = loadBalanceStrategy;
   }
 
@@ -63,6 +63,18 @@ public class ThriftClientConfig {
 
   public int getTimeout() {
     return timeout;
+  }
+
+  public void setTimeout(int timeout) {
+    this.timeout = timeout;
+  }
+
+  public int getRetryTimes() {
+    return retryTimes;
+  }
+
+  public void setRetryTimes(int retryTimes) {
+    this.retryTimes = retryTimes;
   }
 
   public ILoadBalanceStrategy getLoadBalanceStrategy() {
