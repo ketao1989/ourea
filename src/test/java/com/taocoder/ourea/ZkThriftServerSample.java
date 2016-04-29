@@ -3,12 +3,12 @@
  */
 package com.taocoder.ourea;
 
-import java.util.Properties;
-
 import com.taocoder.ourea.common.PropertiesUtils;
 import com.taocoder.ourea.config.ThriftServerConfig;
 import com.taocoder.ourea.config.ZkConfig;
 import com.taocoder.ourea.provider.ServiceProviderFactory;
+
+import java.util.Properties;
 
 /**
  * @author tao.ke Date: 16/4/25 Time: 下午2:27
@@ -21,8 +21,10 @@ public class ZkThriftServerSample {
 
         Properties properties = PropertiesUtils.load("provider.properties");
 
+        ThriftServerConfig config = new ThriftServerConfig(Integer.valueOf(properties.getProperty("port")));
+        config.setGroup(properties.getProperty("group"));
         ServiceProviderFactory.exposeService(new OureaImpl(), new ZkConfig(properties.getProperty("zkAddress")),
-                new ThriftServerConfig(Integer.valueOf(properties.getProperty("port"))));
+                config);
 
     }
 
