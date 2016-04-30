@@ -3,13 +3,11 @@
  */
 package com.taocoder.ourea.loadbalance;
 
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.lang3.RandomUtils;
-
 import com.taocoder.ourea.model.Invocation;
 import com.taocoder.ourea.model.InvokeConn;
+import org.apache.commons.lang3.RandomUtils;
+
+import java.util.List;
 
 /**
  * @author tao.ke Date: 16/3/3 Time: 下午3:16
