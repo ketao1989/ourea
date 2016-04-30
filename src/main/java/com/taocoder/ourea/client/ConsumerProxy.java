@@ -61,11 +61,6 @@ public class ConsumerProxy implements InvocationHandler {
     private CopyOnWriteArrayList<InvokeConn> PROVIDER_CONN_LIST = new CopyOnWriteArrayList<InvokeConn>();
 
     /**
-     * 创建连接的时候,发现失败的连接列表
-     */
-    private CopyOnWriteArrayList<InvokeConn> PROVIDER_FAIL_CONN_LIST = new CopyOnWriteArrayList<InvokeConn>();
-
-    /**
      * 调用的class
      */
     private ServiceInfo serviceInfo;
@@ -123,9 +118,7 @@ public class ConsumerProxy implements InvocationHandler {
                 // 服务多次重试连接不上,则直接将该服务对应信息移除
                 if (e instanceof OureaConnCreateException) {
                     synchronized (PROVIDER_CONN_LOCK) {
-                        if (PROVIDER_CONN_LIST.remove(conn)) {
-                            PROVIDER_FAIL_CONN_LIST.add(conn);
-                        }
+                        PROVIDER_CONN_LIST.remove(conn);
                     }
                 }
                 LOGGER.warn("invoke thrift rpc provider fail.e:", e);
@@ -173,7 +166,7 @@ public class ConsumerProxy implements InvocationHandler {
 
                     if (isChangeChildren) {
                         PROVIDER_CONN_LIST = Lists.newCopyOnWriteArrayList(PROVIDER_CONN_CONCURRENT_MAP.values());
-                        PROVIDER_FAIL_CONN_LIST = Lists.newCopyOnWriteArrayList();
+                        //PROVIDER_FAIL_CONN_LIST = Lists.newCopyOnWriteArrayList();
                     }
 
                 }
