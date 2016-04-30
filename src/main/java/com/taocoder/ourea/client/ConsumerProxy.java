@@ -33,8 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author tao.ke Date: 16/4/25 Time: 下午3:20
@@ -155,40 +153,50 @@ public class ConsumerProxy implements InvocationHandler {
             @Override
             public void notify(Set<ProviderInfo> providerInfos) {
                 synchronized (PROVIDER_CONN_LOCK) {
+
+                    boolean isChangeChildren = false;
+
                     for (ProviderInfo info : providerInfos) {
                         if (!PROVIDER_CONN_CONCURRENT_MAP.containsKey(info)) {
                             InvokeConn invokeConn = new InvokeConn(info, clientConfig.getTimeout());
                             PROVIDER_CONN_CONCURRENT_MAP.putIfAbsent(info, invokeConn);
+                            isChangeChildren = true;
                         }
                     }
-                }
+
                 for (Map.Entry<ProviderInfo, InvokeConn> entry : PROVIDER_CONN_CONCURRENT_MAP.entrySet()) {
                     if (!providerInfos.contains(entry.getKey())) {
                         PROVIDER_CONN_CONCURRENT_MAP.remove(entry.getKey());
+                            isChangeChildren = true;
                     }
                 }
-                PROVIDER_CONN_LIST = Lists.newCopyOnWriteArrayList(PROVIDER_CONN_CONCURRENT_MAP.values());
-                PROVIDER_FAIL_CONN_LIST = Lists.newCopyOnWriteArrayList();
+
+                    if (isChangeChildren) {
+                        PROVIDER_CONN_LIST = Lists.newCopyOnWriteArrayList(PROVIDER_CONN_CONCURRENT_MAP.values());
+                        PROVIDER_FAIL_CONN_LIST = Lists.newCopyOnWriteArrayList();
+                    }
+
+                }
             }
         };
         registry.subscribe(serviceInfo, listener);
     }
 
     /**
-     * 定时10s扫描失败的conn,看是否网络恢复可以提供访问.
+     * 定时10s扫描失败的conn,看是否网络恢复可以提供访问. fixme: 新加了主动pull zk数据现场,这里暂时可以不需要了
      */
     private void initScanFailConn() {
 
-        new ScheduledThreadPoolExecutor(1).schedule(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (PROVIDER_CONN_LOCK) {
-                    // 这里简单处理,把确定活的交给业务处理,一般30s内,zk是会触发listener的.
-                    // 如果过了30s还未被zk listener清空,说明只是网络暂时慢,可以让业务再重试看看
-                    PROVIDER_CONN_LIST.addAll(PROVIDER_FAIL_CONN_LIST);
-                }
-            }
-        }, 30L, TimeUnit.SECONDS);
+        // new ScheduledThreadPoolExecutor(1).schedule(new Runnable() {
+        // @Override
+        // public void run() {
+        // synchronized (PROVIDER_CONN_LOCK) {
+        // // 这里简单处理,把确定活的交给业务处理,一般30s内,zk是会触发listener的.
+        // // 如果过了30s还未被zk listener清空,说明只是网络暂时慢,可以让业务再重试看看
+        // PROVIDER_CONN_LIST.addAll(PROVIDER_FAIL_CONN_LIST);
+        // }
+        // }
+        // }, 30L, TimeUnit.SECONDS);
     }
 
     private Constructor<TServiceClient> getClientConstructorClazz() {

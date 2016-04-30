@@ -3,8 +3,13 @@
  */
 package com.taocoder.ourea.registry;
 
-import java.util.List;
-
+import com.google.common.base.Joiner;
+import com.taocoder.ourea.common.Constants;
+import com.taocoder.ourea.common.OureaException;
+import com.taocoder.ourea.common.ProviderInfoUtils;
+import com.taocoder.ourea.config.ZkConfig;
+import com.taocoder.ourea.model.ProviderInfo;
+import com.taocoder.ourea.model.ServiceInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -15,13 +20,9 @@ import org.apache.zookeeper.WatchedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Joiner;
-import com.taocoder.ourea.common.Constants;
-import com.taocoder.ourea.common.OureaException;
-import com.taocoder.ourea.common.ProviderInfoUtils;
-import com.taocoder.ourea.config.ZkConfig;
-import com.taocoder.ourea.model.ProviderInfo;
-import com.taocoder.ourea.model.ServiceInfo;
+import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 注册信息格式 xx=yy&mm=nn
@@ -114,10 +115,24 @@ public class ZkRegistry implements IRegistry {
             }).forPath(parentPath);
 
             listener.notify(ProviderInfoUtils.convertZkChildren(nodes));
+
         } catch (Exception e) {
             LOGGER.error("subscribe thrift service error.path:{},e:", parentPath, e);
             throw new OureaException("subscribe thrift service error." + e.getMessage());
         }
+
+        // 主动拉取数据,防止zk监听失效
+        new ScheduledThreadPoolExecutor(1).schedule(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    List<String> nodes = zkClient.getChildren().forPath(parentPath);
+                    listener.notify(ProviderInfoUtils.convertZkChildren(nodes));
+                } catch (Exception e) {
+                    LOGGER.warn("pull zookeeper path:{} children fail.e:", parentPath, e);
+                }
+            }
+        }, 10L, TimeUnit.SECONDS);
     }
 
     /**
