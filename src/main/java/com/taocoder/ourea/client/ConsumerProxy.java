@@ -147,24 +147,24 @@ public class ConsumerProxy implements InvocationHandler {
             public void notify(Set<ProviderInfo> providerInfos) {
                 synchronized (PROVIDER_CONN_LOCK) {
 
-                    boolean isChangeChildren = false;
+                    boolean isRemoveChildren = false;
 
                     for (ProviderInfo info : providerInfos) {
                         if (!PROVIDER_CONN_CONCURRENT_MAP.containsKey(info)) {
                             InvokeConn invokeConn = new InvokeConn(info, clientConfig.getTimeout());
                             PROVIDER_CONN_CONCURRENT_MAP.putIfAbsent(info, invokeConn);
-                            isChangeChildren = true;
+                            PROVIDER_CONN_LIST.add(invokeConn);
                         }
                     }
 
                 for (Map.Entry<ProviderInfo, InvokeConn> entry : PROVIDER_CONN_CONCURRENT_MAP.entrySet()) {
                     if (!providerInfos.contains(entry.getKey())) {
                         PROVIDER_CONN_CONCURRENT_MAP.remove(entry.getKey());
-                            isChangeChildren = true;
+                        isRemoveChildren = true;
                     }
                 }
 
-                    if (isChangeChildren) {
+                    if (isRemoveChildren) {
                         PROVIDER_CONN_LIST = Lists.newCopyOnWriteArrayList(PROVIDER_CONN_CONCURRENT_MAP.values());
                         //PROVIDER_FAIL_CONN_LIST = Lists.newCopyOnWriteArrayList();
                     }
