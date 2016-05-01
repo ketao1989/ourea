@@ -68,6 +68,7 @@ public class ConsumerProxyFactoryBean
             Object ref = consumerProxyFactory.getProxyClient(clazz,clientConfig,zkConfig);
             DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) ((ContextRefreshedEvent) applicationEvent).getApplicationContext().getAutowireCapableBeanFactory();
             beanFactory.registerSingleton(refId,ref);
+            LOGGER.info("register consumer client interface class into spring applicationContext.");
         }
 
     }
@@ -213,10 +214,6 @@ public class ConsumerProxyFactoryBean
 
     public void setClazz(Class clazz) {
         this.clazz = clazz;
-    }
-
-    public void setConsumerProxyFactory(ConsumerProxyFactory consumerProxyFactory) {
-        this.consumerProxyFactory = consumerProxyFactory;
     }
 
     public void setRefId(String refId) {
