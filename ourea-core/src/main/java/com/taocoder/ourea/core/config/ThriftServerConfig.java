@@ -44,6 +44,11 @@ public class ThriftServerConfig {
     private int weight = Constants.DEFAULT_WEIGHT_VALUE;
 
     /**
+     * 服务状态,表示是否对外服务
+     */
+    private boolean status = true;
+
+    /**
      * 是否注册zk
      */
     private boolean directInvoke = false;
@@ -142,5 +147,13 @@ public class ThriftServerConfig {
 
     public void setWeight(int weight) {
         this.weight = weight;
+    }
+
+    public boolean isStatus() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
     }
 }

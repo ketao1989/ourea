@@ -24,7 +24,7 @@ public class ProviderInfo implements Serializable {
     private int weight;
 
     /**
-     * 是否对外提供服务,后台可以配置手动下线
+     * 是否对外提供服务
      */
     private boolean status = true;
 

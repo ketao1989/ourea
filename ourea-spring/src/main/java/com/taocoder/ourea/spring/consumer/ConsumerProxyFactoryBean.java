@@ -10,6 +10,7 @@ import com.taocoder.ourea.core.config.ZkConfig;
 import com.taocoder.ourea.core.consumer.ConsumerProxyFactory;
 import com.taocoder.ourea.core.loadbalance.ILoadBalanceStrategy;
 import com.taocoder.ourea.core.loadbalance.RoundRobinLoadBalanceStrategy;
+import com.taocoder.ourea.spring.ConfigUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,7 +98,7 @@ public class ConsumerProxyFactoryBean
         if (clazz == null) {
             throw new IllegalArgumentException("build consumer bean fail. clazz is null.");
         }
-        assertEmpty("refId", refId);
+        ConfigUtils.assertEmpty("refId", refId);
 
         if (configLocation != null && (zkConfig == null || clientConfig == null)) {
             Properties properties = PropertiesUtils.load(configLocation.getInputStream());
@@ -178,26 +179,7 @@ public class ConsumerProxyFactoryBean
      * @param properties
      */
     private void buildZkConfig(Properties properties) {
-
-        assertEmpty("zkAddress", properties.getProperty("zkAddress"));
-        zkConfig = new ZkConfig(properties.getProperty("zkAddress"));
-
-        if (StringUtils.isNoneEmpty(properties.getProperty("baseSleepTimeMs"))){
-            zkConfig.setBaseSleepTimeMs(Integer.parseInt(properties.getProperty("baseSleepTimeMs")));
-        }
-
-        if (StringUtils.isNoneEmpty(properties.getProperty("maxRetries"))){
-            zkConfig.setMaxRetries(Integer.parseInt(properties.getProperty("maxRetries")));
-        }
-
-        if (StringUtils.isNoneEmpty(properties.getProperty("maxSleepTimeMs"))){
-            zkConfig.setMaxSleepTimeMs(Integer.parseInt(properties.getProperty("maxSleepTimeMs")));
-        }
-
-        if (StringUtils.isNoneEmpty(properties.getProperty("zkTimeout"))){
-            zkConfig.setZkTimeout(Integer.parseInt(properties.getProperty("zkTimeout")));
-        }
-
+        zkConfig = ConfigUtils.buildConfig(properties);
     }
 
     public void setZkConfig(ZkConfig zkConfig) {
@@ -220,9 +202,5 @@ public class ConsumerProxyFactoryBean
         this.refId = refId;
     }
 
-    private void assertEmpty(String key, String val) {
-        if (StringUtils.isBlank(val)) {
-            throw new IllegalArgumentException(key + "value do not can be empty.");
-        }
-    }
+
 }

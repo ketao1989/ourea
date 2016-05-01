@@ -51,6 +51,10 @@ public class ServiceProvider {
      */
     private ThriftServerConfig serverConfig;
 
+    //-------------------------inner class use--------------------//
+    private ProviderInfo providerInfo;
+    private ServiceInfo serviceInfo;
+
     public ServiceProvider(Object refImpl, ZkConfig zkConfig, ThriftServerConfig serverConfig) {
 
         if (refImpl == null) {
@@ -66,12 +70,13 @@ public class ServiceProvider {
      */
     public void start() {
 
-        ProviderInfo providerInfo = new ProviderInfo();
+        providerInfo = new ProviderInfo();
         providerInfo.setIp(LocalIpUtils.getLocalIp());
         providerInfo.setPort(serverConfig.getPort());
         providerInfo.setWeight(serverConfig.getWeight());
+        providerInfo.setStatus(serverConfig.isStatus());
 
-        ServiceInfo serviceInfo = new ServiceInfo();
+        serviceInfo = new ServiceInfo();
         serviceInfo.setDirectInvoke(serverConfig.isDirectInvoke());
         serviceInfo.setGroup(serverConfig.getGroup());
         serviceInfo.setInterfaceClazz(getIfaceClass());
@@ -105,7 +110,7 @@ public class ServiceProvider {
     }
 
     /**
-     * 启动thrift server
+     * 启动thrift server,如果存在server容器或者多个service,则一些需要设置为daemon模式
      */
     private void startServer() throws Exception {
 
@@ -127,6 +132,15 @@ public class ServiceProvider {
         });
         thread.setDaemon(serverConfig.isDaemonRun());
         thread.start();
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override public void run() {
+                if (!serverConfig.isDirectInvoke()) {
+                    unZkRegister(providerInfo, serviceInfo);
+                }
+                server.stop();
+            }
+        }));
+
         LOGGER.info("----------------start thrift server--------------");
     }
 

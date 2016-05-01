@@ -105,7 +105,7 @@ public class ZkRegistry implements IRegistry {
         } catch (Exception e) {
             LOGGER.error("unregister thrift service error.parentPath:{},endPrefixPath:{},e:", parentPath, endPrefixPath,
                     e);
-            throw new OureaException("unregister thrift service error." + e.getMessage());
+            //throw new OureaException("unregister thrift service error." + e.getMessage());
         }
     }
 
