@@ -7,9 +7,9 @@ import com.google.common.base.Joiner;
 import com.taocoder.ourea.core.common.Constants;
 import com.taocoder.ourea.core.common.OureaException;
 import com.taocoder.ourea.core.common.ProviderInfoUtils;
-import com.taocoder.ourea.core.model.ServiceInfo;
 import com.taocoder.ourea.core.config.ZkConfig;
 import com.taocoder.ourea.core.model.ProviderInfo;
+import com.taocoder.ourea.core.model.ServiceInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -132,7 +132,7 @@ public class ZkRegistry implements IRegistry {
         }
 
         // 主动拉取数据,防止zk监听失效
-        new ScheduledThreadPoolExecutor(1).schedule(new Runnable() {
+        new ScheduledThreadPoolExecutor(1).scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -142,7 +142,7 @@ public class ZkRegistry implements IRegistry {
                     LOGGER.warn("pull zookeeper path:{} children fail.e:", parentPath, e);
                 }
             }
-        }, 10L, TimeUnit.SECONDS);
+        },1L, 30L, TimeUnit.SECONDS);
     }
 
     /**

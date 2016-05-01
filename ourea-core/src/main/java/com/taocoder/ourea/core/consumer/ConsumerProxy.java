@@ -183,7 +183,7 @@ public class ConsumerProxy implements InvocationHandler {
      */
     private void initScanFailConn() {
 
-        // new ScheduledThreadPoolExecutor(1).schedule(new Runnable() {
+        // new ScheduledThreadPoolExecutor(1).scheduleWithFixedDelay(new Runnable() {
         // @Override
         // public void run() {
         // synchronized (PROVIDER_CONN_LOCK) {
@@ -192,7 +192,7 @@ public class ConsumerProxy implements InvocationHandler {
         // PROVIDER_CONN_LIST.addAll(PROVIDER_FAIL_CONN_LIST);
         // }
         // }
-        // }, 30L, TimeUnit.SECONDS);
+        // },1L, 30L, TimeUnit.SECONDS);
     }
 
     private Constructor<TServiceClient> getClientConstructorClazz() {
