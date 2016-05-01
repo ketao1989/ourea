@@ -3,7 +3,6 @@
  */
 package com.taocoder.ourea;
 
-import com.taocoder.ourea.core.Ourea;
 import org.apache.thrift.TException;
 
 /**

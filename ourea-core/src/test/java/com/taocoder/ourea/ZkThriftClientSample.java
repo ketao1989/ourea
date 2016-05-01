@@ -3,7 +3,6 @@
  */
 package com.taocoder.ourea;
 
-import com.taocoder.ourea.core.Ourea;
 import com.taocoder.ourea.core.common.PropertiesUtils;
 import com.taocoder.ourea.core.config.ThriftClientConfig;
 import com.taocoder.ourea.core.config.ZkConfig;
