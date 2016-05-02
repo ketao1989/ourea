@@ -73,6 +73,9 @@ public class ZkRegistry implements IRegistry {
 
         try {
 
+            // 确保不存在上次的节点未被clear,可能admin操作导致
+            unregister(info,providerInfo,role);
+
             zkClient.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(path);
             LOGGER.info("register thrift service in path :{}", path);
 
@@ -97,8 +100,10 @@ public class ZkRegistry implements IRegistry {
             List<String> nodes = zkClient.getChildren().forPath(parentPath);
 
             for (String endPath : nodes) {
+                // 只会有一个临时节点存在
                 if (endPath.startsWith(endPrefixPath)) {
                     zkClient.delete().forPath(parentPath + Constants.PATH_SEPARATOR + endPath);
+                    break;
                 }
             }
 
