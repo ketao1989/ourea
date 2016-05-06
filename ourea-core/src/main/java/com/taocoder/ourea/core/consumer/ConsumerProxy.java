@@ -3,18 +3,17 @@
  */
 package com.taocoder.ourea.core.consumer;
 
-import com.google.common.collect.Lists;
-import com.taocoder.ourea.core.common.OureaException;
-import com.taocoder.ourea.core.registry.INotifyListener;
 import com.taocoder.ourea.core.common.Constants;
 import com.taocoder.ourea.core.common.LocalIpUtils;
 import com.taocoder.ourea.core.common.OureaConnCreateException;
+import com.taocoder.ourea.core.common.OureaException;
 import com.taocoder.ourea.core.config.ThriftClientConfig;
 import com.taocoder.ourea.core.config.ZkConfig;
 import com.taocoder.ourea.core.model.Invocation;
 import com.taocoder.ourea.core.model.InvokeConn;
 import com.taocoder.ourea.core.model.ProviderInfo;
 import com.taocoder.ourea.core.model.ServiceInfo;
+import com.taocoder.ourea.core.registry.INotifyListener;
 import com.taocoder.ourea.core.registry.IRegistry;
 import com.taocoder.ourea.core.registry.ZkRegistry;
 import org.apache.commons.lang3.StringUtils;
@@ -120,11 +119,8 @@ public class ConsumerProxy implements InvocationHandler {
             } catch (Exception e) {
                 // 服务多次重试连接不上,则直接将该服务对应信息移除
                 if (e instanceof OureaConnCreateException) {
-                    synchronized (PROVIDER_CONN_LOCK) {
-                        PROVIDER_CONN_LIST.remove(conn);
-                        if (conn != null && conn.getConnPool() != null){
-                            conn.getConnPool().close();
-                        }
+                    if (PROVIDER_CONN_LIST.remove(conn) && conn != null && conn.getConnPool() != null){
+                        conn.getConnPool().close();
                     }
                 }
                 LOGGER.warn("invoke thrift rpc provider fail.e:", e);
@@ -152,9 +148,6 @@ public class ConsumerProxy implements InvocationHandler {
             @Override
             public void notify(Set<ProviderInfo> providerInfos) {
                 synchronized (PROVIDER_CONN_LOCK) {
-
-                    boolean isRemoveChildren = false;
-
                     for (ProviderInfo info : providerInfos) {
                         if (!PROVIDER_CONN_CONCURRENT_MAP.containsKey(info)) {
                             InvokeConn invokeConn = new InvokeConn(info, clientConfig.getTimeout());
@@ -163,18 +156,12 @@ public class ConsumerProxy implements InvocationHandler {
                         }
                     }
 
-                for (Map.Entry<ProviderInfo, InvokeConn> entry : PROVIDER_CONN_CONCURRENT_MAP.entrySet()) {
-                    if (!providerInfos.contains(entry.getKey())) {
-                        PROVIDER_CONN_CONCURRENT_MAP.remove(entry.getKey());
-                        isRemoveChildren = true;
+                    for (Map.Entry<ProviderInfo, InvokeConn> entry : PROVIDER_CONN_CONCURRENT_MAP.entrySet()) {
+                        if (!providerInfos.contains(entry.getKey())) {
+                            PROVIDER_CONN_LIST.remove(entry.getValue());
+                            PROVIDER_CONN_CONCURRENT_MAP.remove(entry.getKey());
+                        }
                     }
-                }
-
-                    if (isRemoveChildren) {
-                        PROVIDER_CONN_LIST = Lists.newCopyOnWriteArrayList(PROVIDER_CONN_CONCURRENT_MAP.values());
-                        //PROVIDER_FAIL_CONN_LIST = Lists.newCopyOnWriteArrayList();
-                    }
-
                 }
             }
         };
