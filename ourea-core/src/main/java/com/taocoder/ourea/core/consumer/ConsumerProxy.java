@@ -122,6 +122,9 @@ public class ConsumerProxy implements InvocationHandler {
                 if (e instanceof OureaConnCreateException) {
                     synchronized (PROVIDER_CONN_LOCK) {
                         PROVIDER_CONN_LIST.remove(conn);
+                        if (conn != null && conn.getConnPool() != null){
+                            conn.getConnPool().close();
+                        }
                     }
                 }
                 LOGGER.warn("invoke thrift rpc provider fail.e:", e);
