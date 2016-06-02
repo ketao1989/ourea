@@ -22,16 +22,18 @@ public class RoundRobinLoadBalanceStrategy extends AbstractLoadBalanceStrategy {
     protected InvokeConn doSelect(List<InvokeConn> invokeConns, Invocation invocation) {
 
         String key = invocation.getInterfaceName() + invocation.getMethodName();
-
         Integer cur = current.get(key);
 
         if (cur == null || cur >= Integer.MAX_VALUE - 1) {
             cur = 0;
         }
-
         current.putIfAbsent(key, cur + 1);
 
-        return invokeConns.get(cur % invokeConns.size());
+        try {
+            return invokeConns.get(cur % invokeConns.size());
+        }catch (IndexOutOfBoundsException e){
+            return invokeConns.get(0);
+        }
 
     }
 }
