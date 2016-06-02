@@ -122,6 +122,7 @@ public class ConsumerProxy implements InvocationHandler {
                     if (PROVIDER_CONN_LIST.remove(conn) && conn != null && conn.getConnPool() != null){
                         conn.getConnPool().close();
                     }
+                    conn = null;//help GC
                 }
                 LOGGER.warn("invoke thrift rpc provider fail.e:", e);
                 exceptionMsg = e.getMessage();
