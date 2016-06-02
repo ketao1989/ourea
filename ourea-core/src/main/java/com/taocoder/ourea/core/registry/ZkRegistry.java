@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -137,7 +137,7 @@ public class ZkRegistry implements IRegistry {
         }
 
         // 主动拉取数据,防止zk监听失效
-        new ScheduledThreadPoolExecutor(1).scheduleWithFixedDelay(new Runnable() {
+        Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
                 try {

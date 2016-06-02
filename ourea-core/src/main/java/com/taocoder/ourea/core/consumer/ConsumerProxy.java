@@ -120,9 +120,7 @@ public class ConsumerProxy implements InvocationHandler {
             } catch (Exception e) {
                 // 服务多次重试连接不上,则直接将该服务对应信息移除
                 if (e instanceof OureaConnCreateException) {
-                    synchronized (PROVIDER_CONN_LOCK) {
                         PROVIDER_CONN_LIST.remove(conn);
-                    }
                 }
                 LOGGER.warn("invoke thrift rpc provider fail.e:", e);
                 exceptionMsg = e.getMessage();
@@ -148,6 +146,7 @@ public class ConsumerProxy implements InvocationHandler {
         INotifyListener listener = new INotifyListener() {
             @Override
             public void notify(Set<ProviderInfo> providerInfos) {
+                // 同步,保证多个listener串行更新
                 synchronized (PROVIDER_CONN_LOCK) {
 
                     boolean isRemoveChildren = false;
