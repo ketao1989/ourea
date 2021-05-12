@@ -105,7 +105,7 @@ Thrift 原生的对外接口已经很简单了，但是为什么还需要去封�
 
 服务发现机制，在很多RPC套件中都会提供。`Zookeeper`一直作为经典实现服务发现机制的底层服务，所以这里显然也是这样的。下面给出，实现的模块交互图：
 
-<img src="http://taocoder.com/images/2016/04/ourea.png" />
+<img src="http://ketao1989.github.io/images/2016/04/ourea.png" />
 
 ### 3.1 交互说明
 
